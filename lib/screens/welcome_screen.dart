@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'onboarding_screen.dart';
 
@@ -177,11 +178,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ),
         ],
       ),
-      child: const Center(
-        child: Icon(
-          Icons.flare,
-          color: _goldenHour,
-          size: 32,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          'assets/logo.png',
+          width: 64,
+          height: 64,
+          fit: BoxFit.cover,
         ),
       ),
     );
@@ -222,7 +225,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       child: ElevatedButton(
         onPressed: () {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
+            CupertinoPageRoute(
               builder: (_) => const OnboardingScreen(),
             ),
           );

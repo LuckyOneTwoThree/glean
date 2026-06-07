@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
 
 import '../models/models.dart';
+import '../utils/html_utils.dart';
 import 'database_service.dart';
 import 'feed_service.dart';
 
@@ -51,7 +52,12 @@ class FetchService {
         fetched += articles.length;
 
         for (final article in articles) {
-          final isDup = await _checkDuplicate(article.title, article.url);
+          final isDup = await _checkDuplicate(
+            article.title,
+            article.url,
+            sourceUrl: article.sourceUrl,
+            sourceCredibility: feed.credibility,
+          );
           if (isDup) {
             deduped++;
           } else {
@@ -89,8 +95,8 @@ class FetchService {
       return await _fetchFromFeed(feed);
     } catch (e) {
       if (retryCount < 2) {
-        // 重试间隔：5秒、15秒
-        await Future.delayed(Duration(seconds: [5, 15][retryCount]));
+        // 重试间隔：5分钟、15分钟（PRD 4.1: 5/15/30 分钟递增）
+        await Future.delayed(Duration(minutes: [5, 15][retryCount]));
         return _fetchFromFeedSafe(feed, retryCount: retryCount + 1);
       }
       // 3次失败，更新错误计数
@@ -155,47 +161,7 @@ class FetchService {
   /// 剥离 HTML 标签，清理为纯文本
   /// 处理：HTML标签 → 换行 → 实体解码 → 空白压缩
   static String _stripHtml(String? html) {
-    if (html == null || html.isEmpty) return '';
-
-    var text = html;
-
-    // 1. 将块级标签替换为换行
-    text = text.replaceAllMapped(
-      RegExp(r'</(p|div|br|h[1-6]|li|tr|blockquote|section|article|header|footer|aside)>', caseSensitive: false),
-      (_) => '\n',
-    );
-    // <br> 和 <br/> 自闭合标签
-    text = text.replaceAllMapped(RegExp(r'<br\s*/?\s*>', caseSensitive: false), (_) => '\n');
-
-    // 2. 移除所有 HTML 标签
-    text = text.replaceAll(RegExp(r'<[^>]*>'), '');
-
-    // 3. HTML 实体解码
-    text = text.replaceAll('&amp;', '&');
-    text = text.replaceAll('&lt;', '<');
-    text = text.replaceAll('&gt;', '>');
-    text = text.replaceAll('&quot;', '"');
-    text = text.replaceAll('&#39;', "'");
-    text = text.replaceAll('&apos;', "'");
-    text = text.replaceAll('&nbsp;', ' ');
-    text = text.replaceAllMapped(RegExp(r'&#(\d+);'), (m) {
-      final code = int.tryParse(m.group(1) ?? '');
-      return code != null ? String.fromCharCode(code) : m.group(0)!;
-    });
-    text = text.replaceAllMapped(RegExp(r'&#x([0-9a-fA-F]+);'), (m) {
-      final code = int.tryParse(m.group(1) ?? '', radix: 16);
-      return code != null ? String.fromCharCode(code) : m.group(0)!;
-    });
-
-    // 4. 清理 CDATA 残留
-    text = text.replaceAll('<![CDATA[', '');
-    text = text.replaceAll(']]>', '');
-
-    // 5. 压缩连续空白和换行
-    text = text.replaceAll(RegExp(r'[ \t]+'), ' ');
-    text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-
-    return text.trim();
+    return HtmlUtils.stripHtml(html);
   }
 
   /// 解析 RSS XML（支持 RSS 2.0 和 Atom 1.0）
@@ -224,30 +190,51 @@ class FetchService {
 
     // Atom 1.0: <feed><entry>
     final atomEntries = document.findAllElements('entry');
-    for (final entry in atomEntries) {
-      final linkElements = entry.findElements('link');
-      String link = '';
-      if (linkElements.isNotEmpty) {
-        // 优先取 rel="alternate"，否则取第一个有 href 的
-        final altLink = linkElements.firstWhere(
-          (el) => el.getAttribute('rel') == 'alternate',
-          orElse: () => linkElements.first,
-        );
-        link = altLink.getAttribute('href') ?? '';
+    if (atomEntries.isNotEmpty) {
+      for (final entry in atomEntries) {
+        final linkElements = entry.findElements('link');
+        String link = '';
+        if (linkElements.isNotEmpty) {
+          final altLink = linkElements.firstWhere(
+            (el) => el.getAttribute('rel') == 'alternate',
+            orElse: () => linkElements.first,
+          );
+          link = altLink.getAttribute('href') ?? '';
+        }
+        final atomSummary = _getElementText(entry, 'summary');
+        final atomContent = _getElementText(entry, 'content');
+        items.add(_RssItem(
+          title: _getElementText(entry, 'title'),
+          link: link,
+          description: atomSummary,
+          content: atomContent.isNotEmpty ? atomContent : (atomSummary.isNotEmpty ? atomSummary : null),
+          pubDate: _parseDate(
+            _getElementText(entry, 'published') ??
+                _getElementText(entry, 'updated'),
+          ),
+          author: _getElementText(entry, 'author/name'),
+        ));
       }
-      final atomSummary = _getElementText(entry, 'summary');
-      final atomContent = _getElementText(entry, 'content');
-      items.add(_RssItem(
-        title: _getElementText(entry, 'title'),
-        link: link,
-        description: atomSummary,
-        content: atomContent.isNotEmpty ? atomContent : (atomSummary.isNotEmpty ? atomSummary : null),
-        pubDate: _parseDate(
-          _getElementText(entry, 'published') ??
-              _getElementText(entry, 'updated'),
-        ),
-        author: _getElementText(entry, 'author/name'),
-      ));
+      return items;
+    }
+
+    // RDF (RSS 1.0): <rdf:RDF><item>
+    // RDF 的 item 元素可能带命名空间，用 local name 匹配
+    for (final element in document.rootElement.children) {
+      if (element is XmlElement && element.name.local == 'item') {
+        final desc = _getElementText(element, 'description');
+        items.add(_RssItem(
+          title: _getElementText(element, 'title'),
+          link: _getElementText(element, 'link'),
+          description: desc,
+          content: desc.isNotEmpty ? desc : null,
+          pubDate: _parseDate(
+            _getElementText(element, 'dc:date') ??
+                _getElementText(element, 'date'),
+          ),
+          author: _getElementText(element, 'dc:creator'),
+        ));
+      }
     }
 
     return items;
@@ -283,7 +270,7 @@ class FetchService {
 
   /// 去重检查
   /// 对应 PRD 接口 DedupService.checkDuplicate
-  Future<bool> _checkDuplicate(String title, String url) async {
+  Future<bool> _checkDuplicate(String title, String url, {String? sourceUrl, double? sourceCredibility}) async {
     // URL 精确匹配
     final urlMatch = await _db.query(
       'articles',
@@ -309,7 +296,24 @@ class FetchService {
       final jaccard = _wordJaccardSimilarity(title, existingTitle);
       final editSim = _editDistanceSimilarity(title, existingTitle);
       final combined = 0.6 * jaccard + 0.4 * editSim;
-      if (combined >= 0.75) return true;
+      if (combined >= 0.75) {
+        // 发现相似文章，比较来源可信度
+        // 如果新文章来源可信度更高，删除旧文章让新文章入库
+        if (sourceCredibility != null && sourceUrl != null) {
+          final existingSourceUrl = map['source_url'] as String? ?? '';
+          double existingCred = 5.0;
+          if (existingSourceUrl.isNotEmpty) {
+            final feedMaps = await _db.query('feeds', where: 'url = ?', whereArgs: [existingSourceUrl]);
+            existingCred = (feedMaps.isNotEmpty ? (feedMaps.first['credibility'] as num?)?.toDouble() : null) ?? 5.0;
+          }
+          if (sourceCredibility > existingCred) {
+            // 新来源可信度更高，删除旧文章
+            await _db.delete('articles', where: 'id = ?', whereArgs: [map['id']]);
+            return false; // 允许新文章入库
+          }
+        }
+        return true;
+      }
     }
 
     return false;

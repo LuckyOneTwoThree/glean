@@ -35,8 +35,21 @@ class NotificationService {
     _initialized = true;
   }
 
-  /// 请求通知权限（iOS 14+）
+  /// 请求通知权限（iOS 14+ / Android 13+）
   static Future<bool> requestPermission() async {
+    if (!_initialized) await init();
+    // Android 13+ 需要运行时权限
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      final granted = await androidPlugin.requestNotificationsPermission();
+      return granted ?? false;
+    }
+    // iOS
+    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    if (iosPlugin != null) {
+      final granted = await iosPlugin.requestPermissions(alert: true, badge: true, sound: true);
+      return granted ?? false;
+    }
     return true;
   }
 

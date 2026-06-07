@@ -159,7 +159,7 @@ class _FetchSettingsScreenState extends ConsumerState<FetchSettingsScreen> {
 
     // 同步更新定时任务（仅移动端）
     if (!kIsWeb) {
-      await ScheduleService.scheduleFetch(intervalHours: _fetchInterval);
+      await ScheduleService.scheduleFetch(intervalHours: _fetchInterval, wifiOnly: _wifiOnly);
     }
   }
 

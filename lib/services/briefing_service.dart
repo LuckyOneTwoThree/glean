@@ -91,12 +91,22 @@ class BriefingService {
 
       // 4. 对未评分文章进行评分和摘要
       for (final map in allArticles) {
-        final article = Article.fromMap(map);
+        var article = Article.fromMap(map);
         try {
           if (article.scoreTotal == 0) {
             await _scoreService.scoreArticle(article.id, config.aiMode);
+            // 重新查询以获取可能由 LLM 评分附带生成的摘要
+            final updatedMaps = await _db.query('articles', where: 'id = ?', whereArgs: [article.id]);
+            if (updatedMaps.isNotEmpty) {
+              article = Article.fromMap(updatedMaps.first);
+            }
           }
-          if (article.summaryOne == null || article.summaryOne!.isEmpty) {
+          
+          final needsSummary = article.summaryOne == null || article.summaryOne!.isEmpty;
+          // economy 模式：仅无摘要时本地生成
+          // hybrid 模式：强制使用 LLM 生成摘要（覆盖本地空摘要）
+          // quality 模式：如上面已生成 LLM 摘要，则跳过
+          if (needsSummary || (config.aiMode != 'economy' && article.scoreMode != 'llm')) {
             await _summaryService.summarize(article.id, config.aiMode);
           }
         } catch (e) {
@@ -116,7 +126,7 @@ class BriefingService {
       final filteredArticles = _filterByCategories(scoredArticles, config.categories);
 
       // 7. 按国内外比例分配
-      final selectedArticles = _allocateByRatio(
+      final selectedArticles = await _allocateByRatio(
         filteredArticles,
         config.dailyCount,
         config.domesticRatio,
@@ -281,35 +291,46 @@ class BriefingService {
 
   /// 按国内外比例分配文章名额
   /// 过滤极低分文章（score < 3.0），再按比例分配
-  List<Map<String, dynamic>> _allocateByRatio(
+  Future<List<Map<String, dynamic>>> _allocateByRatio(
     List<Map<String, dynamic>> articles,
     int dailyCount,
     double domesticRatio,
-  ) {
+  ) async {
     // 过滤极低分文章（评分低于3.0的不入选简报）
     final qualified = articles.where((a) {
       final score = (a['score_total'] as num?)?.toDouble() ?? 0;
       return score >= 3.0;
     }).toList();
 
+    // 从 feeds 表获取国内外映射
+    final feeds = await _db.query('feeds');
+    final feedDomesticMap = <String, bool>{};
+    for (final feed in feeds) {
+      final url = feed['url'] as String? ?? '';
+      final isDomestic = (feed['is_domestic'] as int?) == 1;
+      feedDomesticMap[url] = isDomestic;
+    }
+
     // 分离国内外文章
     final domestic = <Map<String, dynamic>>[];
     final international = <Map<String, dynamic>>[];
 
     for (final article in qualified) {
-      final sourceUrl = article['source_url'] as String?;
+      final sourceUrl = article['source_url'] as String? ?? '';
       final sourceName = article['source_name'] as String? ?? '';
-      bool isDomestic = FeedService.isDomesticUrl(sourceUrl ?? '');
-      if (!isDomestic && sourceUrl != null && sourceUrl.isNotEmpty) {
-        // source_url 有值但不是国内域名，保持判断
-      } else if (sourceUrl == null || sourceUrl.isEmpty) {
-        // source_url 为空时，用 source_name 匹配国内源名称
+
+      // 优先通过 feeds 表的 is_domestic 字段判断
+      bool isDomestic = feedDomesticMap[sourceUrl] ?? FeedService.isDomesticUrl(sourceUrl);
+
+      // 如果仍无法判断，用 source_name 匹配
+      if (sourceUrl.isEmpty) {
         const domesticNames = [
           '36氪', '量子位', '机器之心', 'InfoQ', '少数派', '爱范儿',
           'IT之家', '虎嗅', '财新网', '第一财经', '极客公园', '华尔街见闻',
         ];
         isDomestic = domesticNames.any((n) => sourceName.contains(n));
       }
+
       if (isDomestic) {
         domestic.add(article);
       } else {
@@ -318,8 +339,21 @@ class BriefingService {
     }
 
     // 按比例分配名额（不超过实际可用数量）
-    final domesticSlots = (dailyCount * domesticRatio).round();
-    final internationalSlots = dailyCount - domesticSlots;
+    int domesticSlots = (dailyCount * domesticRatio).round();
+    int internationalSlots = dailyCount - domesticSlots;
+
+    // 动态名额补偿
+    if (domestic.length < domesticSlots) {
+      // 国内不足，名额顺延给国际
+      final deficit = domesticSlots - domestic.length;
+      domesticSlots = domestic.length;
+      internationalSlots += deficit;
+    } else if (international.length < internationalSlots) {
+      // 国际不足，名额顺延给国内
+      final deficit = internationalSlots - international.length;
+      internationalSlots = international.length;
+      domesticSlots += deficit;
+    }
 
     final selected = <Map<String, dynamic>>[];
     selected.addAll(domestic.take(domesticSlots));

@@ -80,6 +80,7 @@ class ExportService {
     final articles = await _db.query('articles', orderBy: 'score_total DESC');
     final briefings = await _db.query('briefings', orderBy: 'date DESC');
     final feeds = await _db.query('feeds');
+    final scores = await _db.query('scores', orderBy: 'scored_at DESC');
     final logs = await _db.query('execution_logs');
 
     final timestamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -97,6 +98,7 @@ class ExportService {
         'articles': articles.length,
         'briefings': briefings.length,
         'feeds': feeds.length,
+        'scores': scores.length,
         'logs': logs.length,
       },
     });
@@ -122,7 +124,11 @@ class ExportService {
     final feedsJson = JsonEncoder.withIndent('  ').convert(feeds);
     archive.addFile(ArchiveFile.string('feeds.json', feedsJson));
 
-    // 5. 执行日志
+    // 5. 评分记录
+    final scoresJson = JsonEncoder.withIndent('  ').convert(scores);
+    archive.addFile(ArchiveFile.string('scores.json', scoresJson));
+
+    // 6. 执行日志
     final logsJson = JsonEncoder.withIndent('  ').convert(logs);
     archive.addFile(ArchiveFile.string('execution_logs.json', logsJson));
 

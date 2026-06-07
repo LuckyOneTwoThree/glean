@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../utils/snackbar_util.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article.dart';
@@ -8,6 +10,7 @@ import 'briefing_screen.dart';
 import 'settings_screen.dart';
 import 'article_detail_screen.dart';
 import 'favorites_screen.dart';
+import '../widgets/shimmer.dart';
 
 /// 首页当前tab索引
 final homeTabIndexProvider = StateProvider<int>((ref) => 0);
@@ -106,7 +109,13 @@ class _HomeTab extends ConsumerWidget {
     final filter = ref.watch(homeFilterProvider);
     final sort = ref.watch(homeSortProvider);
 
-    return CustomScrollView(
+    return RefreshIndicator(
+      onRefresh: () async {
+        await runFetch(ref);
+      },
+      color: const Color(0xFF1A2B3C),
+      backgroundColor: Colors.white,
+      child: CustomScrollView(
       slivers: [
         // 顶部 AppBar
         SliverAppBar(
@@ -155,50 +164,52 @@ class _HomeTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '暂无文章',
+                        filter == 'all' ? '暂无文章' :
+                        filter == 'unread' ? '暂无未读文章' :
+                        filter == 'favorited' ? '暂无收藏文章' : '暂无文章',
                         style: GoogleFonts.hankenGrotesk(
                           fontSize: 15,
                           color: const Color(0xFF74777D),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                                        onPressed: () async {
-                          try {
-                            await runFetch(ref);
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('采集失败: $e')),
-                              );
+                      if (filter == 'all') ...[
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () async {
+                            try {
+                              await runFetch(ref);
+                            } catch (e) {
+                              if (context.mounted) {
+                                showFloatingSnackBar(context, '采集失败: $e');
+                              }
                             }
-                          }
-                        },
-                                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.refresh, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              '采集',
-                              style: GoogleFonts.hankenGrotesk(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A2B3C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          ],
-                        ),
-                                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A2B3C),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.refresh, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                '采集',
+                                style: GoogleFonts.hankenGrotesk(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -217,7 +228,7 @@ class _HomeTab extends ConsumerWidget {
                     article: article,
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(
+                        CupertinoPageRoute(
                           builder: (_) => ArticleDetailScreen(article: article),
                         ),
                       );
@@ -231,8 +242,11 @@ class _HomeTab extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
+          loading: () => SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => const ArticleSkeleton(),
+              childCount: 5,
+            ),
           ),
           error: (err, stack) => SliverFillRemaining(
             child: Center(child: Text('加载失败: $err')),
@@ -242,6 +256,7 @@ class _HomeTab extends ConsumerWidget {
         // 底部留白
         const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
       ],
+    ),
     );
   }
 
@@ -346,10 +361,12 @@ class _HomeTab extends ConsumerWidget {
                         color: const Color(0xFFD4AF37).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
-                        Icons.auto_awesome,
-                        color: Color(0xFFD4AF37),
-                        size: 20,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../utils/snackbar_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -182,9 +183,7 @@ class _BriefingConfigScreenState extends ConsumerState<BriefingConfigScreen> {
       await saveUserConfig(ref, newConfig);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已保存 ${_selectedDomains.length} 个关注领域')),
-        );
+        showFloatingSnackBar(context, '已保存 ${_selectedDomains.length} 个关注领域');
         Navigator.of(context).pop();
       }
     });

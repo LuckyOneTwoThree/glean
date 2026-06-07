@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - Data Sources</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#44474c",
+                        "outline": "#74777d",
+                        "on-surface": "#1a1c1c",
+                        "surface": "#f9f9f8",
+                        "ink-blue": "#1A2B3C",
+                        "golden-hour": "#D4AF37",
+                        "soft-grey": "#E8E8E6",
+                        "text-dimmed": "#6B7280",
+                        "primary": "#041627",
+                        "paper-white": "#FFFFFF",
+                        "primary-fixed": "#d2e4fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "gutter-md": "16px",
+                        "section-gap": "48px",
+                        "base": "4px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-xl": ["Source Serif 4"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-md": ["Source Serif 4"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-sm": ["Source Serif 4"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Source Serif 4"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Hanken Grotesk', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline-xl, .font-headline-lg, .font-headline-md, .font-headline-sm { font-family: 'Source Serif 4', serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #1A2B3C;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #1A2B3C;
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+        .toggle-label {
+            width: 44px;
+            height: 24px;
+            background-color: #E8E8E6;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen antialiased selection:bg-primary-fixed selection:text-primary">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-on-background flat no shadows docked full-width top-0 z-40 sticky">
+<div class="flex justify-between items-center w-full px-container-margin py-stack-md max-w-[800px] mx-auto">
+<button class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity Active: scale-95 duration-150 flex items-center justify-center p-2 -ml-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ink-blue">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div class="font-headline-md text-headline-md text-primary dark:text-primary-fixed tracking-tight">
+                拾光 / Glean
+            </div>
+<div class="w-10 flex justify-end">
+<div class="w-8 h-8 rounded-full bg-soft-grey border border-outline/20 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-text-dimmed text-[18px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-[800px] mx-auto px-container-margin py-stack-lg pb-32">
+<!-- Progress Bar -->
+<div class="w-full h-[4px] bg-soft-grey rounded-full mb-section-gap overflow-hidden flex">
+<div class="h-full bg-ink-blue w-1/2"></div>
+<div class="h-full bg-gradient-to-r from-ink-blue to-golden-hour w-1/4"></div>
+</div>
+<!-- Header -->
+<div class="mb-section-gap">
+<h1 class="font-headline-xl text-headline-xl text-ink-blue mb-stack-sm">Curated Sources</h1>
+<p class="font-body-lg text-body-lg text-text-dimmed">Select the channels that form your daily briefing. We've pre-selected high signal-to-noise ratio publications.</p>
+</div>
+<!-- Search & Custom Add Bar -->
+<div class="bg-paper-white p-2 rounded-xl shadow-[0_4px_20px_0_rgba(26,43,60,0.04)] border border-soft-grey flex items-center mb-section-gap transition-colors focus-within:border-ink-blue">
+<span class="material-symbols-outlined text-text-dimmed ml-3 mr-2">search</span>
+<input class="flex-grow bg-transparent border-none outline-none font-body-md text-body-md text-ink-blue placeholder-text-dimmed py-3" placeholder="Search publications or paste an RSS URL..." type="text"/>
+<button class="ml-2 flex items-center gap-2 bg-surface text-ink-blue px-4 py-2 rounded-lg font-label-md hover:bg-soft-grey transition-colors border border-soft-grey">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Add Source
+            </button>
+</div>
+<!-- Pre-configured Sources Grid -->
+<section class="mb-section-gap">
+<div class="flex items-center gap-4 mb-stack-md">
+<h2 class="font-headline-md text-headline-md text-ink-blue">Technology &amp; Insight</h2>
+<div class="h-[1px] flex-grow bg-soft-grey"></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-gutter-md">
+<!-- Card 1 -->
+<div class="bg-paper-white rounded-xl p-5 border border-soft-grey shadow-[0_4px_20px_0_rgba(26,43,60,0.02)] hover:shadow-[0_8px_30px_0_rgba(26,43,60,0.06)] hover:border-ink-blue/20 transition-all duration-300 flex items-start gap-4">
+<div class="w-12 h-12 rounded-lg bg-[#E5F0FF] text-[#0066FF] flex items-center justify-center shrink-0 font-headline-sm font-bold">
+                        H
+                    </div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-sm text-headline-sm text-ink-blue leading-tight">Hacker News</h3>
+<div class="relative inline-block w-11 mr-2 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="toggle-1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-soft-grey cursor-pointer" for="toggle-1"></label>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-text-dimmed line-clamp-2">The latest tech news, startups, and profound engineering discussions.</p>
+<div class="mt-3 inline-flex items-center gap-1 bg-surface px-2 py-1 rounded text-[11px] font-label-sm text-text-dimmed tracking-wider uppercase">
+<span class="material-symbols-outlined text-[12px]">public</span> Global
+                        </div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-paper-white rounded-xl p-5 border border-soft-grey shadow-[0_4px_20px_0_rgba(26,43,60,0.02)] hover:shadow-[0_8px_30px_0_rgba(26,43,60,0.06)] hover:border-ink-blue/20 transition-all duration-300 flex items-start gap-4">
+<div class="w-12 h-12 rounded-lg bg-[#FFEBE5] text-[#FF4500] flex items-center justify-center shrink-0 font-headline-sm font-bold">
+                        少数
+                    </div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-sm text-headline-sm text-ink-blue leading-tight">少数派 (sspai)</h3>
+<div class="relative inline-block w-11 mr-2 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="toggle-2" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-soft-grey cursor-pointer" for="toggle-2"></label>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-text-dimmed line-clamp-2">High-quality digital life, productivity tools, and modern lifestyle concepts.</p>
+<div class="mt-3 inline-flex items-center gap-1 bg-surface px-2 py-1 rounded text-[11px] font-label-sm text-text-dimmed tracking-wider uppercase">
+<span class="material-symbols-outlined text-[12px]">location_on</span> Domestic
+                        </div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar (Fixed within container bounds visually) -->
+<div class="fixed bottom-0 w-full bg-surface/80 backdrop-blur-md border-t border-soft-grey py-4 z-50">
+<div class="max-w-[800px] mx-auto px-container-margin flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-text-dimmed">2 sources selected</span>
+<button class="bg-ink-blue text-paper-white px-8 py-3 rounded-lg font-label-md tracking-wide hover:opacity-90 transition-opacity shadow-[0_4px_14px_0_rgba(26,43,60,0.2)] flex items-center gap-2">
+                Continue to Briefing
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

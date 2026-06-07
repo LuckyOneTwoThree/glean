@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import '../models/models.dart';
+import '../utils/html_utils.dart';
 import 'database_service.dart';
 import 'llm_service.dart';
 
@@ -80,6 +81,7 @@ class SummaryService {
 
   /// TextRank 算法抽取三要点
   /// 基于句子间相似度构建图，迭代计算句子权重，取 Top-3
+  /// 注意：此方法仅在 economy 模式或 LLM 降级时调用，已有要点可直接复用
   List<String> _extractPointsTextRank(Article article) {
     if (article.summaryPoints.isNotEmpty) return article.summaryPoints;
     final content = _cleanText(article.content);
@@ -179,38 +181,6 @@ class SummaryService {
   /// 清洗文本：剥离 HTML 标签、解码实体、压缩空白
   /// 防止数据库中已有未清洗的历史数据
   String _cleanText(String? text) {
-    if (text == null || text.isEmpty) return '';
-    var result = text;
-
-    // 剥离 HTML 标签
-    if (result.contains('<')) {
-      // 块级标签 → 换行
-      result = result.replaceAllMapped(
-        RegExp(r'</(p|div|br|h[1-6]|li|tr|blockquote|section|article|header|footer|aside)>', caseSensitive: false),
-        (_) => '\n',
-      );
-      result = result.replaceAllMapped(RegExp(r'<br\s*/?\s*>', caseSensitive: false), (_) => '\n');
-      // 移除所有标签
-      result = result.replaceAll(RegExp(r'<[^>]*>'), '');
-    }
-
-    // HTML 实体解码
-    result = result.replaceAll('&amp;', '&');
-    result = result.replaceAll('&lt;', '<');
-    result = result.replaceAll('&gt;', '>');
-    result = result.replaceAll('&quot;', '"');
-    result = result.replaceAll('&#39;', "'");
-    result = result.replaceAll('&apos;', "'");
-    result = result.replaceAll('&nbsp;', ' ');
-
-    // CDATA 残留
-    result = result.replaceAll('<![CDATA[', '');
-    result = result.replaceAll(']]>', '');
-
-    // 压缩空白
-    result = result.replaceAll(RegExp(r'[ \t]+'), ' ');
-    result = result.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-
-    return result.trim();
+    return HtmlUtils.stripHtml(text);
   }
 }

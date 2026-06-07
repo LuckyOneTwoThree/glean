@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/snackbar_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
@@ -266,9 +267,7 @@ class _FeedAddScreenState extends ConsumerState<FeedAddScreen> {
         _isTesting = false;
         _testSuccess = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('连接失败: $e')),
-      );
+      showFloatingSnackBar(context, '连接失败: $e');
     }
   }
 

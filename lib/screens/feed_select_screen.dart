@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/feed.dart';
@@ -92,7 +93,7 @@ class _FeedSelectScreenState extends ConsumerState<FeedSelectScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => const FeedAddScreen()))
+                  .push(CupertinoPageRoute(builder: (_) => const FeedAddScreen()))
                   .then((_) => _loadFeeds());
             },
             child: Text(

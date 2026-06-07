@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - Article Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#ffe088",
+                    "primary-fixed": "#d2e4fb",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#feddb5",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "paper-white": "#FFFFFF",
+                    "secondary": "#735c00",
+                    "inverse-on-surface": "#f1f1f0",
+                    "tertiary-container": "#38260b",
+                    "secondary-container": "#fed65b",
+                    "on-primary-fixed-variant": "#38485a",
+                    "tertiary": "#211200",
+                    "surface-bright": "#f9f9f8",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#e9c349",
+                    "background": "#f9f9f8",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-high": "#e8e8e7",
+                    "inverse-surface": "#2f3130",
+                    "on-error-container": "#93000a",
+                    "golden-hour": "#D4AF37",
+                    "on-tertiary-fixed": "#281802",
+                    "on-secondary-fixed-variant": "#574500",
+                    "surface-dim": "#dadad9",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#1a2b3c",
+                    "primary-fixed-dim": "#b7c8de",
+                    "primary": "#041627",
+                    "tertiary-fixed-dim": "#e1c29b",
+                    "surface-container-low": "#f3f4f3",
+                    "on-primary-container": "#8192a7",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-tint": "#4f6073",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#a88c69",
+                    "on-secondary-fixed": "#241a00",
+                    "soft-grey": "#E8E8E6",
+                    "on-primary-fixed": "#0b1d2d",
+                    "outline-variant": "#c4c6cd",
+                    "on-secondary-container": "#745c00",
+                    "outline": "#74777d",
+                    "on-tertiary-fixed-variant": "#584326",
+                    "unread-blue": "#2D5AF7",
+                    "surface-container": "#eeeeed",
+                    "on-surface-variant": "#44474c",
+                    "on-surface": "#1a1c1c",
+                    "surface": "#f9f9f8",
+                    "on-background": "#1a1c1c",
+                    "inverse-primary": "#b7c8de",
+                    "text-dimmed": "#6B7280",
+                    "ink-blue": "#1A2B3C"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "section-gap": "48px",
+                    "stack-md": "16px",
+                    "gutter-md": "16px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "label-md": ["Hanken Grotesk"],
+                    "body-sm": ["Hanken Grotesk"],
+                    "headline-xl": ["Source Serif 4"],
+                    "headline-sm": ["Source Serif 4"],
+                    "code-sm": ["jetbrainsMono"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Source Serif 4"],
+                    "headline-lg": ["Source Serif 4"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Source Serif 4"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-header {
+            background: rgba(249, 249, 248, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .ai-gradient-border {
+            position: relative;
+        }
+        .ai-gradient-border::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to right, #1A2B3C, #D4AF37);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .article-shadow {
+            box-shadow: 0 4px 20px 0 rgba(26, 43, 60, 0.04);
+        }
+        body {
+            background-color: #f9f9f8;
+            color: #1a1c1c;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md antialiased overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 glass-header">
+<div class="max-w-[800px] mx-auto px-container-margin py-stack-md flex justify-between items-center">
+<div class="flex items-center gap-4">
+<button aria-label="Back" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md text-primary tracking-tight">拾光 / Glean</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">bookmark</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary">share</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 max-w-[800px] mx-auto px-container-margin">
+<!-- Article Header -->
+<section class="mb-stack-lg">
+<div class="flex justify-between items-start gap-4 mb-stack-md">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg leading-tight text-primary">
+                    OpenAI 发布全新推理模型 GPT-Next，实现突破性进展
+                </h1>
+<div class="flex flex-col items-center">
+<div class="w-14 h-14 rounded-full border-2 border-golden-hour flex items-center justify-center bg-paper-white shadow-sm">
+<span class="font-headline-sm text-headline-sm text-ink-blue">9.8</span>
+</div>
+<span class="text-label-sm font-label-sm text-golden-hour mt-1">AI 评分</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-soft-grey rounded-full">
+<span class="material-symbols-outlined text-[16px]">newspaper</span>
+<span class="text-label-md font-label-md">TechCrunch</span>
+</div>
+<span class="text-label-md font-label-md">•</span>
+<span class="text-label-md font-label-md">2023年10月24日</span>
+</div>
+</section>
+<!-- AI Summary Area (Glean Core) -->
+<section class="mb-section-gap space-y-stack-md">
+<!-- One Liner -->
+<div class="p-stack-md bg-primary-container/5 rounded-xl border-l-4 border-ink-blue">
+<h3 class="text-label-sm font-label-sm text-ink-blue uppercase tracking-widest mb-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span> 一句话摘要
+                </h3>
+<p class="font-headline-sm text-headline-sm leading-relaxed text-primary">
+                    OpenAI 的下一代推理引擎显著提升了数学与逻辑处理能力，标志着向通用人工智能（AGI）迈出的关键一步。
+                </p>
+</div>
+<!-- Three Key Points Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<div class="p-stack-md bg-paper-white rounded-xl border border-soft-grey article-shadow">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center mb-stack-sm">
+<span class="text-label-md font-label-md text-ink-blue">01</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface">采用全新的系统二级思维（System 2 Thinking）架构，支持更长路径的逻辑链推理。</p>
+</div>
+<div class="p-stack-md bg-paper-white rounded-xl border border-soft-grey article-shadow">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center mb-stack-sm">
+<span class="text-label-md font-label-md text-ink-blue">02</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface">在 AIME 竞赛基准测试中得分提升 40%，展现出远超 GPT-4 的多维认知。 </p>
+</div>
+<div class="p-stack-md bg-paper-white rounded-xl border border-soft-grey article-shadow">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center mb-stack-sm">
+<span class="text-label-md font-label-md text-ink-blue">03</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface">模型大幅降低了幻觉率，并引入了交互式纠错功能。 </p>
+</div>
+</div>
+<!-- Action Suggestion & Score Logic -->
+<div class="flex flex-wrap items-center gap-stack-md pt-stack-sm">
+<div class="flex items-center gap-2 px-4 py-2 bg-secondary-container/30 rounded-full border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-weight="fill">lightbulb</span>
+<span class="text-label-md font-label-md text-secondary">
+<strong class="font-bold">深入阅读建议：</strong> 此文对 AGI 演进路径有独特见解，适合战略决策者参考。
+                    </span>
+</div>
+<button class="flex items-center gap-1.5 text-ink-blue hover:underline transition-all" onclick="toggleScore()">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+<span class="text-label-md font-label-md">查看评分依据</span>
+</button>
+</div>
+<!-- Score Breakdown Hidden Panel -->
+<div class="hidden overflow-hidden transition-all duration-300 bg-surface-container-low rounded-xl p-stack-md border border-soft-grey" id="scorePanel">
+<div class="grid grid-cols-2 gap-stack-md">
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant">来源可信度</span>
+<span class="text-label-md font-label-md text-ink-blue">10.0</span>
+</div>
+<div class="h-1 bg-soft-grey rounded-full overflow-hidden">
+<div class="h-full bg-ink-blue w-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant">信息密度</span>
+<span class="text-label-md font-label-md text-ink-blue">9.5</span>
+</div>
+<div class="h-1 bg-soft-grey rounded-full overflow-hidden">
+<div class="h-full bg-ink-blue w-[95%]"></div>
+</div>
+</div>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-stack-sm">
+                    该文章来自顶级科技媒体，包含大量实验数据与技术参数，去噪率极高，具有极佳的参考价值。
+                </p>
+</div>
+</section>
+<!-- Divider -->
+<div class="flex items-center gap-4 text-ink-blue/30 mb-section-gap">
+<div class="h-[1px] flex-grow bg-soft-grey"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<span class="text-label-sm font-label-sm tracking-widest">AI GLEANED CONTENT</span>
+</div>
+<div class="h-[1px] flex-grow bg-soft-grey"></div>
+</div>
+<!-- Article Content -->
+<article class="font-headline-sm text-on-surface leading-relaxed space-y-stack-md prose prose-slate">
+<p>
+                在今天凌晨举行的 OpenAI 开发者闭门会议上，首席技术官 Mira Murati 展示了名为 GPT-Next 的全新模型。这款模型并不单纯是 GPT-4 的放大版，而是基于一种被内部称为“深思熟虑”的全新推理架构。
+            </p>
+<figure class="my-stack-lg">
+<img alt="AI Neural Network Concept" class="w-full h-auto rounded-xl article-shadow" data-alt="An abstract visualization of a neural network with glowing nodes and intricate interconnected light filaments. The aesthetic is clean and high-tech, using a palette of deep navy blue, soft white, and radiant golden accents. The lighting is ethereal and sophisticated, suggesting advanced artificial intelligence and complex thought processes. The overall mood is futuristic, serene, and professional, perfectly aligning with a premium digital newspaper style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfP3Y49CAQ7bHdHxmD_ZeJM4W0VaEccAk4xwW7z-4PMijxhM4KMez-4UHzzhE-ykIskkObJGFIUTC6TqomZwUtmCO1clDddHy8vfh9HPhwd9RpGZRvy59V2H9NrPqgJTffnywyKwa-806e0-Nqr1NpcgzjAMbkcSRZO8uwFqJCBJU9MZyFzHcHP_T6vCU7s0JH0Xjq5t4dujlc25C7xe8_sHCTjPzyySxjsmeHz5gpVD8KQP3qdacDUNWC8aMf2KTTW-PWpjCd-xM4"/>
+<figcaption class="text-center text-label-sm font-label-sm text-on-surface-variant mt-2">OpenAI GPT-Next 推理链架构概念图</figcaption>
+</figure>
+<p>
+                GPT-Next 在解决高等数学问题时表现出了惊人的毅力。在传统的测试中，模型往往会因为逻辑跳跃而产生错误，但 GPT-Next 会在内部生成数千个候选步骤，并通过强化学习自主发现并纠正其中的错误。
+            </p>
+<p>
+                “我们不再只是让机器预测下一个字，” Murati 说道，“我们在教它如何思考，如何在给出答案之前进行‘系统性推理’。” 这一转变意味着 AI 在法律咨询、科学研究等对严谨性要求极高的领域将有质的突破。
+            </p>
+<div class="p-stack-md bg-paper-white border border-ink-blue/10 rounded-xl italic text-on-surface-variant border-l-4 border-l-golden-hour">
+                “这不仅仅是参数的增加，这是范式的转移。我们将迎来一个能够自主修正逻辑谬误的 AI 时代。” —— 行业分析师
+            </div>
+<p>
+                目前，该模型已对部分企业级用户开放 API 预览版，预计在下个季度正式推送给所有 Plus 用户。
+            </p>
+</article>
+<!-- Action Buttons -->
+<div class="mt-section-gap flex flex-col sm:flex-row items-center gap-stack-md">
+<button class="w-full sm:flex-1 py-4 bg-ink-blue text-paper-white rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 duration-150 shadow-lg">
+<span class="material-symbols-outlined">auto_stories</span>
+                阅读原文 (TechCrunch)
+            </button>
+<div class="flex items-center gap-stack-md w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-6 py-4 border border-ink-blue text-ink-blue rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-ink-blue/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">markdown</span>
+                    Markdown
+                </button>
+<button class="flex-1 sm:flex-none px-6 py-4 border border-ink-blue text-ink-blue rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-ink-blue/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">javascript</span>
+                    JSON
+                </button>
+</div>
+</div>
+</main>
+<!-- Navigation Shell Placeholder (Suppressed for task focus as per rules) -->
+<script>
+        function toggleScore() {
+            const panel = document.getElementById('scorePanel');
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                panel.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        // Simple scroll progress interaction
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            // Future feature: progress bar implementation
+        };
+    </script>
+</body></html>

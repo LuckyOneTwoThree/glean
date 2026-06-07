@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../utils/snackbar_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -400,11 +401,13 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
 
   Widget _buildCostMonitor() {
     // 从数据库读取真实 token 消耗
+    final llmConfigAsync = ref.watch(llmConfigProvider);
+    final budget = llmConfigAsync.valueOrNull?.budgetTokens ?? 100000;
+
     return FutureBuilder<int>(
       future: _getMonthlyTokenUsage(),
       builder: (context, snapshot) {
         final used = snapshot.data ?? 0;
-        final budget = 100000; // 默认预算 100k tokens
         final ratio = budget > 0 ? used / budget : 0.0;
         final isOverBudget = ratio > 1.0;
 
@@ -483,7 +486,7 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
       final now = DateTime.now();
       final monthStart = DateTime(now.year, now.month, 1).millisecondsSinceEpoch;
       final results = await db.rawQuery(
-        "SELECT SUM(token_count) as total FROM execution_logs WHERE timestamp >= ? AND task_type IN ('score_llm', 'summary_llm')",
+        "SELECT SUM(input_tokens + output_tokens) as total FROM llm_costs WHERE created_at >= ?",
         [monthStart],
       );
       return (results.first['total'] as int?) ?? 0;
@@ -499,7 +502,7 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
   }
 
   Future<void> _testConnection() async {
-    if (_apiKeyController.text.isEmpty) {
+    if (_apiKeyController.text.isEmpty && _provider != 'custom') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请先输入 API Key')),
       );
@@ -517,19 +520,13 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
       );
       final result = await llmService.testConnection(config);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.success
+      showFloatingSnackBar(context, result.success
               ? '连接成功！延迟 ${result.latency}ms'
-              : '连接失败：${result.errorMessage ?? "未知错误"}'),
-          backgroundColor: result.success ? Colors.green : const Color(0xFFBA1A1A),
-        ),
-      );
+              : '连接失败：${result.errorMessage ?? "未知错误"}',
+          isError: !result.success);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('测试出错：$e')),
-      );
+      showFloatingSnackBar(context, '测试出错：$e', isError: true);
     } finally {
       if (mounted) setState(() => _isTesting = false);
     }

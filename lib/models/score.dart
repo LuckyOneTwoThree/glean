@@ -8,6 +8,7 @@ class Score {
   final double density;
   final double total;
   final String? rawResponse;
+  final String? actionTag;
   final int scoredAt;
 
   const Score({
@@ -18,6 +19,7 @@ class Score {
     this.density = 0,
     this.total = 0,
     this.rawResponse,
+    this.actionTag,
     required this.scoredAt,
   });
 
@@ -30,6 +32,7 @@ class Score {
       density: (map['density'] as num?)?.toDouble() ?? 0,
       total: (map['total'] as num?)?.toDouble() ?? 0,
       rawResponse: map['raw_response'] as String?,
+      actionTag: map['action_tag'] as String?,
       scoredAt: map['scored_at'] as int,
     );
   }
@@ -43,6 +46,7 @@ class Score {
       'density': density,
       'total': total,
       'raw_response': rawResponse,
+      'action_tag': actionTag,
       'scored_at': scoredAt,
     };
   }

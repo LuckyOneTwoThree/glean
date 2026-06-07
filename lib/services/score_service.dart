@@ -36,7 +36,7 @@ class ScoreService {
     if (effectiveMode == 'quality') {
       score = await _scoreWithLLM(article);
     } else {
-      // economy 和 hybrid 模式：本地规则评分
+      // economy 和 hybrid 模式：本地规则评分（PRD 5.7：hybrid 评分=本地规则，摘要=LLM）
       score = await _scoreWithRules(article);
     }
 
@@ -48,6 +48,18 @@ class ScoreService {
       await _db.insert('scores', score.toMap());
     } catch (_) {
       // 评分记录插入失败（如 ID 重复），不影响主流程
+    }
+
+    // 回写行动标签到文章
+    if (score.actionTag != null && score.actionTag!.isNotEmpty) {
+      try {
+        await _db.update(
+          'articles',
+          {'action_tag': score.actionTag},
+          where: 'id = ?',
+          whereArgs: [article.id],
+        );
+      } catch (_) {}
     }
 
     // 更新文章评分
@@ -151,18 +163,82 @@ class ScoreService {
     return false;
   }
 
+  /// 记录用户反馈
+  Future<void> recordFeedback(String articleId, String feedbackType) async {
+    await _db.insert('user_feedback', {
+      'id': 'fb${DateTime.now().millisecondsSinceEpoch}',
+      'article_id': articleId,
+      'feedback_type': feedbackType,
+      'created_at': DateTime.now().millisecondsSinceEpoch,
+    });
+
+    // 如果是"没用"反馈，降低来源可信度
+    if (feedbackType == 'not_useful') {
+      try {
+        final articleMaps = await _db.query('articles', where: 'id = ?', whereArgs: [articleId]);
+        if (articleMaps.isNotEmpty) {
+          final sourceUrl = articleMaps.first['source_url'] as String?;
+          if (sourceUrl != null && sourceUrl.isNotEmpty) {
+            final feedMaps = await _db.query('feeds', where: 'url = ?', whereArgs: [sourceUrl]);
+            if (feedMaps.isNotEmpty) {
+              final currentCred = (feedMaps.first['credibility'] as num?)?.toDouble() ?? 5.0;
+              final newCred = (currentCred - 0.5).clamp(1.0, 10.0).toDouble();
+              await _db.update('feeds', {'credibility': newCred}, where: 'url = ?', whereArgs: [sourceUrl]);
+            }
+          }
+        }
+      } catch (_) {}
+    } else if (feedbackType == 'useful') {
+      // "有用"反馈，微增来源可信度
+      try {
+        final articleMaps = await _db.query('articles', where: 'id = ?', whereArgs: [articleId]);
+        if (articleMaps.isNotEmpty) {
+          final sourceUrl = articleMaps.first['source_url'] as String?;
+          if (sourceUrl != null && sourceUrl.isNotEmpty) {
+            final feedMaps = await _db.query('feeds', where: 'url = ?', whereArgs: [sourceUrl]);
+            if (feedMaps.isNotEmpty) {
+              final currentCred = (feedMaps.first['credibility'] as num?)?.toDouble() ?? 5.0;
+              final newCred = (currentCred + 0.2).clamp(1.0, 10.0).toDouble();
+              await _db.update('feeds', {'credibility': newCred}, where: 'url = ?', whereArgs: [sourceUrl]);
+            }
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
+  /// 获取文章的反馈记录
+  Future<String?> getArticleFeedback(String articleId) async {
+    final maps = await _db.query('user_feedback', where: 'article_id = ?', whereArgs: [articleId], orderBy: 'created_at DESC', limit: 1);
+    if (maps.isEmpty) return null;
+    return maps.first['feedback_type'] as String;
+  }
+
   /// LLM 评分
   Future<Score> _scoreWithLLM(Article article) async {
     try {
-      final result = await _llmService.scoreArticle(article);
+      final result = await _llmService.scoreAndSummarize(article);
+
+      // 同步保存附带生成的摘要，避免后续在质量模式下重复调用 LLM
+      await _db.update(
+        'articles',
+        {
+          'summary_one': result.oneLine,
+          'summary_points': jsonEncode(result.bullets),
+        },
+        where: 'id = ?',
+        whereArgs: [article.id],
+      );
+
       return Score(
         id: 's${DateTime.now().millisecondsSinceEpoch}_${article.id.hashCode.abs()}',
         articleId: article.id,
         mode: 'llm',
-        credibility: result['credibility'] as double,
-        density: result['density'] as double,
-        total: result['total'] as double,
-        rawResponse: result['raw'] as String?,
+        credibility: result.credibility,
+        density: result.density,
+        total: result.total,
+        rawResponse: result.rawResponse,
+        actionTag: result.actionTag,
         scoredAt: DateTime.now().millisecondsSinceEpoch,
       );
     } catch (e) {

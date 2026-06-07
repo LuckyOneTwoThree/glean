@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
+import '../utils/snackbar_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state_provider.dart';
+import '../services/schedule_service.dart';
 import 'briefing_config_screen.dart';
 import 'feed_select_screen.dart';
 import 'llm_config_screen.dart';
@@ -29,6 +32,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _retentionDays = 30;
   int _fetchInterval = 2;
   bool _wifiOnly = true;
+  String _pushTime = '08:00';
   bool _configLoaded = false;
 
   static const _inkBlue = Color(0xFF1A2B3C);
@@ -58,6 +62,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _retentionDays = config.retentionDays;
         _fetchInterval = config.fetchInterval;
         _wifiOnly = config.wifiOnly;
+        _pushTime = config.pushTime;
         _categories = config.categories.join(', ');
         if (!_configLoaded) _configLoaded = true;
       });
@@ -203,27 +208,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     secondChild: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: Wrap(
-                        spacing: 8,
+                        spacing: 12,
+                        runSpacing: 12,
                         children: [10, 15, 20, 30, 50].map((v) {
                           final isSelected = v == _dailyTotal;
-                          return ChoiceChip(
-                            label: Text('$v 条'),
-                            selected: isSelected,
-                            onSelected: (_) {
+                          return GestureDetector(
+                            onTap: () {
                               setState(() => _dailyTotal = v);
                               _saveConfig('daily_count', v);
                             },
-                            selectedColor: _inkBlue,
-                            backgroundColor: const Color(0xFFF3F4F3),
-                            labelStyle: GoogleFonts.hankenGrotesk(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isSelected ? Colors.white : _inkBlue,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected ? _inkBlue : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected ? _inkBlue : const Color(0xFFE8E8E6),
+                                  width: 1,
+                                ),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: _inkBlue.withValues(alpha: 0.15),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ]
+                                    : [],
+                              ),
+                              child: Text(
+                                '$v 条',
+                                style: GoogleFonts.hankenGrotesk(
+                                  fontSize: 15,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  color: isSelected ? Colors.white : const Color(0xFF44474C),
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            showCheckmark: false,
                           );
                         }).toList(),
                       ),
@@ -340,11 +362,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     await runFetch(ref);
                   }
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(kIsWeb ? 'Web端暂不支持后台采集' : '采集任务已启动')),
-                    );
+                    showFloatingSnackBar(context, kIsWeb ? 'Web端暂不支持后台采集' : '采集任务已启动');
                   }
                 },
+              ),
+              _buildDivider(),
+              _SettingsItem(
+                title: '简报推送时间',
+                subtitle: '每天 $_pushTime 自动生成简报',
+                trailing: const Icon(Icons.schedule, color: Color(0xFF74777D), size: 18),
+                onTap: () => _showPushTimePicker(context),
               ),
             ]),
           ),
@@ -390,8 +417,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _navigateTo(BuildContext context, Widget screen) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => screen),
+      CupertinoPageRoute(builder: (_) => screen),
     );
+  }
+
+  void _showPushTimePicker(BuildContext context) async {
+    final parts = _pushTime.split(':');
+    final initialHour = int.tryParse(parts[0]) ?? 8;
+    final initialMinute = int.tryParse(parts[1]) ?? 0;
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: initialHour, minute: initialMinute),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: _inkBlue,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final newPushTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      await _saveConfig('push_time', newPushTime);
+      // 注册简报定时推送任务
+      if (!kIsWeb) {
+        await ScheduleService.scheduleBriefing(pushTime: newPushTime);
+      }
+    }
   }
 
   /// 分组标题

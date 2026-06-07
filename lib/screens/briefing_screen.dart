@@ -1,12 +1,15 @@
 import 'dart:convert';
+import '../utils/snackbar_util.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article.dart';
 import '../providers/app_state_provider.dart';
 import 'article_detail_screen.dart';
+import '../widgets/shimmer.dart';
 
 /// 简报页面
 class BriefingScreen extends ConsumerStatefulWidget {
@@ -83,8 +86,11 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
                       ),
                     );
                   },
-                  loading: () => const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
+                  loading: () => SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const ArticleSkeleton(),
+                      childCount: 3,
+                    ),
                   ),
                   error: (err, stack) => SliverFillRemaining(
                     child: Center(child: Text('加载失败: $err')),
@@ -112,44 +118,84 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
     final now = DateTime.now();
     final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // AI DAILY BRIEFING 标签
-          Row(
-            children: [
-              const Icon(
-                Icons.auto_awesome,
-                color: Color(0xFFD4AF37),
-                size: 14,
+    return Stack(
+      children: [
+        Positioned(
+          top: -50,
+          right: -50,
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFD4AF37).withOpacity(0.15),
+                  Colors.transparent,
+                ],
+                radius: 0.6,
               ),
-              const SizedBox(width: 6),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -20,
+          left: -20,
+          child: Container(
+            width: 150,
+            height: 150,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFF1A2B3C).withOpacity(0.08),
+                  Colors.transparent,
+                ],
+                radius: 0.6,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // AI DAILY BRIEFING 标签
+              Row(
+                children: [
+                  const Icon(
+                    Icons.auto_awesome,
+                    color: Color(0xFFD4AF37),
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'AI DAILY BRIEFING',
+                    style: GoogleFonts.hankenGrotesk(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFD4AF37),
+                      letterSpacing: 0.08,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // 大标题
               Text(
-                'AI DAILY BRIEFING',
-                style: GoogleFonts.hankenGrotesk(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFD4AF37),
-                  letterSpacing: 0.08,
+                '拾光日报 · $dateStr',
+                style: GoogleFonts.sourceSerif4(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                  color: const Color(0xFF1A2B3C),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          // 大标题
-          Text(
-            '拾光日报 · $dateStr',
-            style: GoogleFonts.sourceSerif4(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-              color: const Color(0xFF1A2B3C),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -160,8 +206,16 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F3),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8E8E6)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1A2B3C).withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: briefingAsync.when(
         data: (briefing) {
@@ -169,28 +223,49 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
           final articleCount = briefing?['article_count'] as int? ?? 0;
           final domesticCount = briefing?['domestic_count'] as int? ?? 0;
           final internationalCount = briefing?['international_count'] as int? ?? 0;
-          return RichText(
-            text: TextSpan(
-              style: GoogleFonts.hankenGrotesk(
-                fontSize: 14,
-                height: 1.5,
-                color: const Color(0xFF44474C),
+          return Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.analytics_outlined, color: Color(0xFFD4AF37), size: 24),
               ),
-              children: [
-                TextSpan(text: '今日采集 $totalFetched 条，AI 精选 '),
-                TextSpan(
-                  text: '$articleCount 条',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFD4AF37),
+              const SizedBox(width: 16),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.hankenGrotesk(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: const Color(0xFF44474C),
+                    ),
+                    children: [
+                      TextSpan(text: '今日采集 $totalFetched 条，AI 精选 '),
+                      TextSpan(
+                        text: '$articleCount 条\n',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A2B3C),
+                        ),
+                      ),
+                      TextSpan(
+                        text: '国内 $domesticCount 条 · 国际 $internationalCount 条',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: const Color(0xFF74777D),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                TextSpan(text: ' | 国内 $domesticCount 条 · 国际 $internationalCount 条'),
-              ],
-            ),
+              ),
+            ],
           );
         },
-        loading: () => const Text('加载中...'),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => const Text('加载失败'),
       ),
     );
@@ -257,7 +332,7 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
+          CupertinoPageRoute(
             builder: (_) => ArticleDetailScreen(article: article),
           ),
         );
@@ -418,9 +493,7 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
     }).catchError((e) {
       if (mounted) {
         ref.read(briefingGeneratingProvider.notifier).state = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('简报生成失败: $e')),
-        );
+        showFloatingSnackBar(context, '简报生成失败: $e');
       }
     });
   }
@@ -578,6 +651,8 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
   }
 
   void _showExportSheet(BuildContext context) {
+    final briefingId = ref.read(todayBriefingProvider).value?['id'] as String?;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF9F9F8),
@@ -612,11 +687,26 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
                     color: const Color(0xFF74777D),
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('简报 Markdown 导出成功')),
-                  );
+                  if (briefingId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('暂无简报可导出')),
+                    );
+                    return;
+                  }
+                  try {
+                    await ref.read(exportServiceProvider).shareBriefing(briefingId, 'md');
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('简报 Markdown 导出成功')),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      showFloatingSnackBar(context, '导出失败: $e');
+                    }
+                  }
                 },
               ),
               ListTile(
@@ -632,11 +722,26 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
                     color: const Color(0xFF74777D),
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('简报 JSON 导出成功')),
-                  );
+                  if (briefingId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('暂无简报可导出')),
+                    );
+                    return;
+                  }
+                  try {
+                    await ref.read(exportServiceProvider).shareBriefing(briefingId, 'json');
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('简报 JSON 导出成功')),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      showFloatingSnackBar(context, '导出失败: $e');
+                    }
+                  }
                 },
               ),
             ],

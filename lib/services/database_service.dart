@@ -11,7 +11,7 @@ import '../models/models.dart';
 /// 管理 Glean 应用的本地数据库
 class DatabaseService {
   static const _dbName = 'glean.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
   static Database? _db;
   static bool _ffiInitialized = false;
 
@@ -113,6 +113,7 @@ class DatabaseService {
         density REAL DEFAULT 0,
         total REAL DEFAULT 0,
         raw_response TEXT,
+        action_tag TEXT,
         scored_at INTEGER NOT NULL,
         FOREIGN KEY (article_id) REFERENCES articles(id)
       )
@@ -184,6 +185,17 @@ class DatabaseService {
       )
     ''');
     await db.execute('CREATE INDEX idx_costs_date ON llm_costs(created_at)');
+
+    // v4 新增表
+    await db.execute('''
+      CREATE TABLE user_feedback (
+        id TEXT PRIMARY KEY,
+        article_id TEXT NOT NULL,
+        feedback_type TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_feedback_article ON user_feedback(article_id)');
 
     // 索引
     await db.execute(
@@ -294,6 +306,21 @@ class DatabaseService {
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE articles ADD COLUMN action_tag TEXT');
+    }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS user_feedback (
+          id TEXT PRIMARY KEY,
+          article_id TEXT NOT NULL,
+          feedback_type TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_feedback_article ON user_feedback(article_id)');
+      // scores 表添加 action_tag 列
+      try {
+        await db.execute('ALTER TABLE scores ADD COLUMN action_tag TEXT');
+      } catch (_) {}
     }
   }
 

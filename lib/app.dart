@@ -45,7 +45,12 @@ class _GleanAppState extends ConsumerState<GleanApp> {
     final configAsync = ref.read(userConfigProvider);
     configAsync.whenData((config) async {
       final interval = config.fetchInterval;
-      await ScheduleService.scheduleFetch(intervalHours: interval);
+      await ScheduleService.scheduleFetch(
+        intervalHours: interval,
+        wifiOnly: config.wifiOnly,
+      );
+      // 注册简报定时推送
+      await ScheduleService.scheduleBriefing(pushTime: config.pushTime);
     });
   }
 

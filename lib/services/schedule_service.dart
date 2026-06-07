@@ -13,6 +13,7 @@ import 'briefing_service.dart';
 /// 对应 PRD Phase 5: 后台任务调度
 class ScheduleService {
   static const _fetchTaskName = 'com.glean.fetch';
+  static const _briefingTaskName = 'com.glean.briefing';
 
   /// 初始化 Workmanager（必须在 main 中调用）
   static void init() {
@@ -21,7 +22,8 @@ class ScheduleService {
 
   /// 注册定时采集任务
   /// [intervalHours] 采集间隔（小时），0表示手动模式（不注册）
-  static Future<void> scheduleFetch({int intervalHours = 2}) async {
+  /// [wifiOnly] 是否仅 WiFi 下采集
+  static Future<void> scheduleFetch({int intervalHours = 2, bool wifiOnly = true}) async {
     await Workmanager().cancelByUniqueName(_fetchTaskName);
 
     if (intervalHours <= 0) return;
@@ -31,11 +33,47 @@ class ScheduleService {
       _fetchTaskName,
       frequency: Duration(hours: intervalHours),
       constraints: Constraints(
-        networkType: NetworkType.connected,
+        networkType: wifiOnly ? NetworkType.unmetered : NetworkType.connected,
       ),
       existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
       backoffPolicy: BackoffPolicy.exponential,
       backoffPolicyDelay: const Duration(minutes: 5),
+    );
+  }
+
+  /// 注册简报定时推送任务
+  /// [pushTime] 推送时间，格式 "HH:mm"（如 "08:00"），null 或空则不注册
+  /// Workmanager 最小周期 15 分钟，使用 periodic task + 时间窗口模拟定时推送
+  static Future<void> scheduleBriefing({String? pushTime}) async {
+    await Workmanager().cancelByUniqueName(_briefingTaskName);
+
+    if (pushTime == null || pushTime.isEmpty) return;
+
+    // 解析推送时间
+    final parts = pushTime.split(':');
+    if (parts.length != 2) return;
+    final hour = int.tryParse(parts[0]) ?? 8;
+    final minute = int.tryParse(parts[1]) ?? 0;
+
+    // 计算距离下次推送的初始延迟
+    final now = DateTime.now();
+    var scheduled = DateTime(now.year, now.month, now.day, hour, minute);
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    final initialDelay = scheduled.difference(now);
+
+    // 注册每日定时任务（使用 OneOffTask + 初始延迟模拟定时推送）
+    // 注意：Workmanager 的 PeriodicTask 最小间隔 15 分钟，无法精确到每天一次
+    // 因此使用 registerOneOffTask 配合 initialDelay，执行完后重新注册
+    await Workmanager().registerOneOffTask(
+      _briefingTaskName,
+      _briefingTaskName,
+      initialDelay: initialDelay,
+      constraints: Constraints(
+        networkType: NetworkType.connected,
+      ),
+      existingWorkPolicy: ExistingWorkPolicy.replace,
     );
   }
 
@@ -126,10 +164,19 @@ Future<bool> _doBriefing() async {
     'label': '简报生成完成',
   });
 
-  await NotificationService.showFetchNotification(
+  await NotificationService.showBriefingNotification(
     title: '拾光 · 简报已就绪',
     body: '今日资讯简报已生成，点击查看',
   );
+
+  // 重新注册明天的简报推送任务
+  try {
+    final configMaps = await dbService.query('user_config', where: 'id = ?', whereArgs: ['default']);
+    if (configMaps.isNotEmpty) {
+      final pushTime = configMaps.first['push_time'] as String? ?? '';
+      await ScheduleService.scheduleBriefing(pushTime: pushTime);
+    }
+  } catch (_) {}
 
   return true;
 }

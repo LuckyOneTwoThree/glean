@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import '../utils/snackbar_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/article.dart';
 import '../providers/app_state_provider.dart';
 import '../widgets/article_card.dart';
 import 'article_detail_screen.dart';
+import '../widgets/shimmer.dart';
 
 /// 收藏页面
 /// 对应 PRD 5.1 文章收藏
@@ -59,26 +62,46 @@ class FavoritesScreen extends ConsumerWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final article = favoritedArticles[index];
-                    return ArticleCard(
-                      article: article,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ArticleDetailScreen(article: article),
-                          ),
+                    return Dismissible(
+                      key: ValueKey(article.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 24),
+                        color: const Color(0xFFBA1A1A).withOpacity(0.9),
+                        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+                      ),
+                      onDismissed: (_) {
+                        toggleFavorite(ref, article.id);
+                        showFloatingSnackBar(
+                          context,
+                          '已取消收藏',
                         );
                       },
-                      onFavoriteToggle: () {
-                        toggleFavorite(ref, article.id);
-                      },
+                      child: ArticleCard(
+                        article: article,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => ArticleDetailScreen(article: article),
+                            ),
+                          );
+                        },
+                        onFavoriteToggle: () {
+                          toggleFavorite(ref, article.id);
+                        },
+                      ),
                     );
                   },
                   childCount: favoritedArticles.length,
                 ),
               );
             },
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+            loading: () => SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const ArticleSkeleton(),
+                childCount: 3,
+              ),
             ),
             error: (err, stack) => SliverFillRemaining(
               child: Center(child: Text('加载失败: $err')),

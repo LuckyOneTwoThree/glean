@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - 评分解释</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#38485a",
+                        "surface-container-high": "#e8e8e7",
+                        "surface-dim": "#dadad9",
+                        "on-secondary-container": "#745c00",
+                        "secondary-container": "#fed65b",
+                        "surface-container-low": "#f3f4f3",
+                        "surface-variant": "#e2e2e2",
+                        "secondary": "#735c00",
+                        "on-tertiary-fixed": "#281802",
+                        "surface": "#f9f9f8",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#4f6073",
+                        "golden-hour": "#D4AF37",
+                        "primary": "#041627",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#0b1d2d",
+                        "primary-fixed-dim": "#b7c8de",
+                        "tertiary-container": "#38260b",
+                        "on-secondary-fixed-variant": "#574500",
+                        "secondary-fixed": "#ffe088",
+                        "outline-variant": "#c4c6cd",
+                        "soft-grey": "#E8E8E6",
+                        "ink-blue": "#1A2B3C",
+                        "tertiary-fixed-dim": "#e1c29b",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#8192a7",
+                        "on-surface": "#1a1c1c",
+                        "background": "#f9f9f8",
+                        "primary-fixed": "#d2e4fb",
+                        "inverse-primary": "#b7c8de",
+                        "on-secondary-fixed": "#241a00",
+                        "surface-bright": "#f9f9f8",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#a88c69",
+                        "tertiary-fixed": "#feddb5",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#211200",
+                        "secondary-fixed-dim": "#e9c349",
+                        "text-dimmed": "#6B7280",
+                        "surface-container": "#eeeeed",
+                        "on-error-container": "#93000a",
+                        "paper-white": "#FFFFFF",
+                        "on-tertiary-fixed-variant": "#584326",
+                        "on-surface-variant": "#44474c",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "unread-blue": "#2D5AF7",
+                        "outline": "#74777d",
+                        "inverse-surface": "#2f3130",
+                        "primary-container": "#1a2b3c",
+                        "inverse-on-surface": "#f1f1f0",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-background": "#1a1c1c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "container-margin": "24px",
+                        "section-gap": "48px",
+                        "gutter-md": "16px",
+                        "base": "4px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Source Serif 4"],
+                        "headline-lg-mobile": ["Source Serif 4"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "headline-lg": ["Source Serif 4"],
+                        "code-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Source Serif 4"],
+                        "headline-md": ["Source Serif 4"],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+        .progress-gradient {
+            background: linear-gradient(90deg, #1A2B3C 0%, #D4AF37 100%);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Main Content Background (Mocking the Article Detail Page) -->
+<main class="max-w-[800px] mx-auto px-container-margin py-stack-lg min-h-screen">
+<header class="mb-stack-lg">
+<h1 class="font-headline-xl text-headline-xl text-ink-blue mb-stack-sm">生成式 AI 对现代传媒的重塑：深度研究与行业展望</h1>
+<div class="flex items-center gap-base text-text-dimmed font-label-md uppercase tracking-wider">
+<span>Technological Review</span>
+<span class="text-soft-grey">•</span>
+<span>Oct 24, 2024</span>
+</div>
+</header>
+<section class="space-y-stack-md leading-relaxed text-body-lg">
+<p>在这个信息过载的时代，如何从海量数据中甄别出有价值的内容？“拾光”不仅是一个聚合器，更是您的私人智囊团。通过多维度的 AI 评估算法，我们确保每一篇推送到您眼前的资讯都经过严格的质量校验...</p>
+</section>
+<!-- Trigger Badge -->
+<div class="mt-stack-lg flex justify-center">
+<button class="group relative flex flex-col items-center gap-base p-stack-md transition-all" onclick="openModal()">
+<div class="w-16 h-16 rounded-full border-2 border-golden-hour flex items-center justify-center bg-paper-white shadow-sm group-hover:shadow-lg transition-shadow">
+<span class="font-headline-md text-headline-md text-golden-hour">9.8</span>
+</div>
+<span class="font-label-md text-ink-blue opacity-60">点击查看评分细节</span>
+</button>
+</div>
+</main>
+<!-- Score Explanation Modal Overlay -->
+<div class="fixed inset-0 z-[60] hidden" id="scoreModal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-ink-blue/20 modal-blur" onclick="closeModal()"></div>
+<!-- Bottom Sheet / Modal -->
+<div class="absolute bottom-0 left-0 right-0 md:relative md:top-1/2 md:-translate-y-1/2 md:mx-auto md:max-w-[480px] bg-paper-white rounded-t-[32px] md:rounded-[32px] p-8 shadow-[0_-4px_40px_rgba(26,43,60,0.1)] animate-slide-up overflow-hidden">
+<!-- Close Indicator (Mobile) -->
+<div class="w-12 h-1.5 bg-soft-grey rounded-full mx-auto mb-8 md:hidden cursor-pointer" onclick="closeModal()"></div>
+<!-- Content Header -->
+<div class="flex flex-col items-center text-center mb-stack-lg">
+<span class="font-label-md text-text-dimmed tracking-widest uppercase mb-base">AI Analysis</span>
+<div class="relative">
+<h2 class="font-headline-xl text-headline-xl text-ink-blue">9.8</h2>
+<!-- Decorative Amber Sparkle -->
+<span class="material-symbols-outlined absolute -top-4 -right-6 text-golden-hour text-[24px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-ink-blue mt-1">综合质量评分</div>
+</div>
+<!-- Dimensions Breakdown -->
+<div class="space-y-stack-lg mb-stack-lg">
+<!-- Source Credibility -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-ink-blue">来源可信度 (Source Credibility)</span>
+<span class="font-code-sm text-golden-hour font-bold">10 / 10</span>
+</div>
+<div class="h-[4px] w-full bg-soft-grey rounded-full overflow-hidden">
+<div class="h-full progress-gradient" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Information Density -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-ink-blue">信息密度 (Information Density)</span>
+<span class="font-code-sm text-golden-hour font-bold">9.6 / 10</span>
+</div>
+<div class="h-[4px] w-full bg-soft-grey rounded-full overflow-hidden">
+<div class="h-full progress-gradient" style="width: 96%;"></div>
+</div>
+</div>
+</div>
+<!-- AI Reason Divider -->
+<div class="flex items-center justify-center gap-stack-sm mb-stack-md text-ink-blue opacity-40">
+<div class="h-[1px] flex-1 bg-soft-grey"></div>
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+<span class="font-label-sm uppercase tracking-tighter">AI Reason</span>
+<div class="h-[1px] flex-1 bg-soft-grey"></div>
+</div>
+<!-- Score Reason Text -->
+<div class="bg-surface p-stack-md rounded-xl border border-soft-grey/50">
+<p class="text-body-md text-on-surface-variant italic leading-relaxed">
+                    "该内容由全球顶尖科技周刊提供，具备极高的时效性与专业深度。AI 检测到文内引用了多项经过同行评审的数据来源，论点严密且无明显的逻辑冗余，是极佳的行业研究参考素材。"
+                </p>
+</div>
+<!-- Actions -->
+<div class="mt-stack-lg pt-stack-md flex gap-stack-md">
+<button class="flex-1 py-4 px-6 border border-ink-blue rounded-full font-label-md text-ink-blue hover:bg-ink-blue hover:text-paper-white transition-colors duration-200" onclick="closeModal()">
+                    了解
+                </button>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-golden-hour/5 rounded-full blur-3xl pointer-events-none"></div>
+</div>
+</div>
+<!-- Bottom Navigation (Shared Component Integration) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-paper-white border-t border-soft-grey shadow-[0_-4px_20px_0_rgba(26,43,60,0.04)]">
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-blue bg-surface-container-low rounded-xl px-4 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Briefing</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-sm text-label-sm">Favorites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+<script>
+        function openModal() {
+            const modal = document.getElementById('scoreModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('scoreModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body></html>

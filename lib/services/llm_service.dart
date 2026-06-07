@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import '../models/models.dart';
+import '../utils/html_utils.dart';
 import 'database_service.dart';
 
 /// LLM API 调用服务
@@ -195,7 +196,12 @@ class LLMService {
     );
 
     // 解析 JSON 响应
-    final content = response.data['choices'][0]['message']['content'] as String;
+    final choices = response.data['choices'] as List<dynamic>?;
+    final message = choices?[0]['message'] as Map<String, dynamic>?;
+    final content = message?['content'] as String?;
+    if (content == null || content.isEmpty) {
+      throw Exception('LLM 返回内容为空');
+    }
     final json = jsonDecode(content) as Map<String, dynamic>;
 
     final scoreJson = json['score'] as Map<String, dynamic>? ?? {};
@@ -243,6 +249,7 @@ class LLMService {
         'density': result.density,
         'total': result.total,
         'reason': result.scoreReason,
+        'action_tag': result.actionTag,
         'raw': result.rawResponse,
       };
     } catch (e) {
@@ -307,28 +314,7 @@ class LLMService {
 
   /// 剥离 HTML 标签，清理为纯文本
   static String _stripHtml(String? html) {
-    if (html == null || html.isEmpty) return '';
-    var text = html;
-    if (!text.contains('<')) return text;
-
-    text = text.replaceAllMapped(
-      RegExp(r'</(p|div|br|h[1-6]|li|tr|blockquote|section|article|header|footer|aside)>', caseSensitive: false),
-      (_) => '\n',
-    );
-    text = text.replaceAllMapped(RegExp(r'<br\s*/?\s*>', caseSensitive: false), (_) => '\n');
-    text = text.replaceAll(RegExp(r'<[^>]*>'), '');
-    text = text.replaceAll('&amp;', '&');
-    text = text.replaceAll('&lt;', '<');
-    text = text.replaceAll('&gt;', '>');
-    text = text.replaceAll('&quot;', '"');
-    text = text.replaceAll('&#39;', "'");
-    text = text.replaceAll('&apos;', "'");
-    text = text.replaceAll('&nbsp;', ' ');
-    text = text.replaceAll('<![CDATA[', '');
-    text = text.replaceAll(']]>', '');
-    text = text.replaceAll(RegExp(r'[ \t]+'), ' ');
-    text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-    return text.trim();
+    return HtmlUtils.stripHtml(html);
   }
 }
 

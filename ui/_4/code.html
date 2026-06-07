@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - 首页</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f9f9f8",
+                        "on-tertiary-fixed-variant": "#584326",
+                        "inverse-primary": "#b7c8de",
+                        "tertiary-fixed-dim": "#e1c29b",
+                        "on-secondary-container": "#745c00",
+                        "text-dimmed": "#6B7280",
+                        "outline": "#74777d",
+                        "surface-container-low": "#f3f4f3",
+                        "surface-variant": "#e2e2e2",
+                        "outline-variant": "#c4c6cd",
+                        "tertiary": "#211200",
+                        "secondary-fixed-dim": "#e9c349",
+                        "secondary-container": "#fed65b",
+                        "unread-blue": "#2D5AF7",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#8192a7",
+                        "golden-hour": "#D4AF37",
+                        "primary-fixed-dim": "#b7c8de",
+                        "surface-container": "#eeeeed",
+                        "soft-grey": "#E8E8E6",
+                        "primary": "#041627",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-fixed": "#281802",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#a88c69",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9f8",
+                        "inverse-surface": "#2f3130",
+                        "primary-fixed": "#d2e4fb",
+                        "surface-dim": "#dadad9",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#ffe088",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#241a00",
+                        "surface-container-high": "#e8e8e7",
+                        "tertiary-container": "#38260b",
+                        "primary-container": "#1a2b3c",
+                        "on-surface": "#1a1c1c",
+                        "surface-tint": "#4f6073",
+                        "paper-white": "#FFFFFF",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#0b1d2d",
+                        "secondary": "#735c00",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-on-surface": "#f1f1f0",
+                        "surface": "#f9f9f8",
+                        "tertiary-fixed": "#feddb5",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-secondary": "#ffffff",
+                        "ink-blue": "#1A2B3C",
+                        "on-surface-variant": "#44474c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "stack-lg": "32px",
+                        "section-gap": "48px",
+                        "stack-md": "16px",
+                        "gutter-md": "16px",
+                        "container-margin": "24px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Source Serif 4"],
+                        "headline-sm": ["Source Serif 4"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "code-sm": ["jetbrainsMono"],
+                        "label-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Source Serif 4"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-xl": ["Source Serif 4"],
+                        "headline-md": ["Source Serif 4"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        
+        .shadow-ambient {
+            box-shadow: 0 4px 20px 0 rgba(26, 43, 60, 0.04);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24 flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-40 bg-surface/90 backdrop-blur-md">
+<div class="flex justify-between items-center w-full px-container-margin py-stack-md max-w-[800px] mx-auto">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-150 p-2 -ml-2 rounded-full">
+<span class="material-symbols-outlined text-[24px]">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">拾光 / Glean</h1>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-soft-grey shadow-sm">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A clean, minimalist user avatar showing a professional looking person in a well-lit studio. Light mode aesthetic with soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhvIN9CO8L3uTVmkyOwrCWGF7zm3DGRWWQ-LVpfIq5-zWzD13-T4SMFCQmqZjyz7H6PnAs5DqPPtSpKOh3MARYWovjry-JUkILWl_LFeWNT6yzpJpufab1lOhYGRbmuMDTynIdw1VSLLAQphYlM6r39fLJMkW5LguEO4Uq92IquhgP2mLfxAM_lZ16uml4nc8QOydJ27GPIwRTj_Mk82LYjhTj_Gm_liD0zC0IGTIkXvrTYXQ3-KQGfiPW01G2VxU9w6fThd562KFA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[800px] px-container-margin flex flex-col gap-section-gap pt-stack-md">
+<!-- Daily Briefing Card -->
+<section class="relative bg-paper-white rounded-xl shadow-ambient border border-soft-grey p-container-margin overflow-hidden">
+<!-- Decorative gradient element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-golden-hour/10 to-transparent rounded-bl-full pointer-events-none"></div>
+<div class="flex flex-col gap-stack-md relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-ink-blue">今日简报 · 2026-06-06</h2>
+<p class="font-body-sm text-body-sm text-text-dimmed mt-1">今日精选 20 条 | 国内 12 条 · 国际 8 条</p>
+</div>
+<button class="text-golden-hour bg-golden-hour/10 p-2 rounded-full hover:bg-golden-hour/20 transition-colors">
+<span class="material-symbols-outlined text-[20px] block" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+</div>
+<div class="w-full h-px bg-soft-grey my-2 relative flex items-center justify-center">
+<div class="bg-paper-white px-2 text-ink-blue/40 absolute">
+<span class="material-symbols-outlined text-[16px]">psychology</span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 border border-surface-variant">
+<p class="font-body-md text-body-md text-ink-blue leading-relaxed">
+<span class="font-bold mr-2 text-golden-hour">AI Insight:</span>今日人工智能领域有重大技术突破，OpenAI 发布新模型，大幅提升了逻辑推理与跨模态理解能力。同时，全球供应链调整导致新能源板块震荡...
+                    </p>
+</div>
+</div>
+</section>
+<!-- Feed Section -->
+<section class="flex flex-col gap-stack-md">
+<!-- Filter & Sort Bar -->
+<div class="flex justify-between items-center bg-surface sticky top-[72px] py-2 z-30">
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-full bg-ink-blue text-on-primary font-label-md text-label-md transition-colors shadow-sm">
+                        全部
+                    </button>
+<button class="px-4 py-1.5 rounded-full bg-paper-white border border-soft-grey text-text-dimmed hover:text-ink-blue hover:border-outline-variant font-label-md text-label-md transition-colors">
+                        未读
+                    </button>
+<button class="px-4 py-1.5 rounded-full bg-paper-white border border-soft-grey text-text-dimmed hover:text-ink-blue hover:border-outline-variant font-label-md text-label-md transition-colors">
+                        收藏
+                    </button>
+</div>
+<div class="flex items-center gap-3 text-text-dimmed">
+<button class="flex items-center gap-1 hover:text-ink-blue transition-colors font-label-sm text-label-sm">
+<span class="">评分</span>
+<span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+</button>
+<span class="text-soft-grey">|</span>
+<button class="flex items-center gap-1 hover:text-ink-blue transition-colors font-label-sm text-label-sm">
+<span class="">时间</span>
+<span class="material-symbols-outlined text-[16px]">unfold_more</span>
+</button>
+</div>
+</div>
+<!-- News List -->
+<div class="flex flex-col gap-4">
+<!-- Article Card 1 -->
+<article class="bg-paper-white rounded-lg p-4 border border-soft-grey shadow-ambient hover:shadow-md transition-shadow cursor-pointer group flex gap-4"><div class="flex-grow flex flex-col gap-2"><div class="flex justify-between items-start gap-4"><h3 class="font-headline-sm text-headline-sm text-ink-blue group-hover:text-golden-hour transition-colors leading-tight">OpenAI 发布全新推理模型 GPT-Next，实现突破性进展</h3><span class="flex-shrink-0 px-2 py-0.5 rounded bg-golden-hour/10 text-golden-hour font-bold text-label-sm border border-golden-hour/20">9.8</span></div><p class="font-body-sm text-body-sm text-text-dimmed line-clamp-1">新模型在复杂逻辑推理和长期记忆规划方面展现出前所未有的能力，标志着向 AGI 迈出重要一步。</p><div class="flex items-center gap-3 mt-1"><span class="font-label-sm text-label-sm text-ink-blue bg-surface-container-low px-2 py-0.5 rounded-full">TechCrunch</span><span class="font-body-sm text-[12px] text-outline">15分钟前</span><div class="flex-grow"></div><button aria-label="Favorite" class="text-outline hover:text-error transition-colors p-1"><span class="material-symbols-outlined text-[20px]">favorite</span></button></div></div></article>
+<!-- Article Card 2 -->
+<article class="bg-paper-white rounded-lg p-4 border border-soft-grey shadow-ambient hover:shadow-md transition-shadow cursor-pointer group flex gap-4"><div class="flex-grow flex flex-col gap-2"><div class="flex justify-between items-start gap-4"><h3 class="font-headline-sm text-headline-sm text-ink-blue group-hover:text-golden-hour transition-colors leading-tight">全球新能源汽车供应链面临重组，本土企业迎来机遇</h3><span class="flex-shrink-0 px-2 py-0.5 rounded bg-ink-blue/5 text-ink-blue font-bold text-label-sm border border-ink-blue/10">8.5</span></div><p class="font-body-sm text-body-sm text-text-dimmed line-clamp-1">受地缘政治及原材料价格波动影响，多家跨国车企宣布调整供应链策略，国内头部供应商订单激增。</p><div class="flex items-center gap-3 mt-1"><span class="font-label-sm text-label-sm text-ink-blue bg-surface-container-low px-2 py-0.5 rounded-full">晚点 LatePost</span><span class="font-body-sm text-[12px] text-outline">2小时前</span><div class="flex-grow"></div><button aria-label="Favorite" class="text-outline hover:text-error transition-colors p-1"><span class="material-symbols-outlined text-[20px]">favorite</span></button></div></div></article>
+<!-- Article Card 3 -->
+<article class="bg-paper-white rounded-lg p-4 border border-soft-grey shadow-ambient hover:shadow-md transition-shadow cursor-pointer group flex gap-4 opacity-75"><div class="flex-grow flex flex-col gap-2"><div class="flex justify-between items-start gap-4"><h3 class="font-headline-sm text-headline-sm text-text-dimmed group-hover:text-ink-blue transition-colors leading-tight">苹果 WWDC 2026 前瞻：iOS 20 将带来深度集成的端侧 AI</h3><span class="flex-shrink-0 px-2 py-0.5 rounded bg-surface-variant text-outline font-bold text-label-sm border border-soft-grey">7.2</span></div><p class="font-body-sm text-body-sm text-outline line-clamp-1">据彭博社报道，即将发布的 iOS 20 将首次实现系统级的深度大模型重构，大幅降低对云端算力的依赖。</p><div class="flex items-center gap-3 mt-1"><span class="font-label-sm text-label-sm text-text-dimmed bg-surface-container-low px-2 py-0.5 rounded-full">The Verge</span><span class="font-body-sm text-[12px] text-outline">5小时前</span><div class="flex-grow"></div><button aria-label="Favorited" class="text-error p-1"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span></button></div></div></article>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-paper-white md:hidden shadow-[0_-4px_20px_0_rgba(26,43,60,0.04)]">
+<!-- Home (Active) -->
+<button class="flex flex-col items-center justify-center text-ink-blue bg-surface-container-low rounded-xl px-4 py-1 hover:text-primary transition-opacity scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm mt-1">首页</span>
+</button>
+<!-- Briefing (Inactive) -->
+<button class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity">
+<span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+<span class="font-label-sm text-label-sm mt-1">简报</span>
+</button>
+<!-- Favorites (Inactive) -->
+<button class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity">
+<span class="material-symbols-outlined text-[24px]">bookmark</span>
+<span class="font-label-sm text-label-sm mt-1">收藏</span>
+</button>
+<!-- Settings (Inactive) -->
+<button class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="font-label-sm text-label-sm mt-1">设置</span>
+</button>
+</nav>
+<!-- Desktop Navigation Cluster (Hidden on mobile) -->
+<nav class="hidden md:flex fixed top-0 right-0 h-[72px] items-center pr-container-margin gap-4 z-50">
+<button class="text-ink-blue font-label-md text-label-md font-semibold px-3 py-2 border-b-2 border-ink-blue">首页</button>
+<button class="text-text-dimmed hover:text-ink-blue transition-colors font-label-md text-label-md px-3 py-2">简报</button>
+<button class="text-text-dimmed hover:text-ink-blue transition-colors font-label-md text-label-md px-3 py-2">收藏</button>
+<button class="text-text-dimmed hover:text-ink-blue transition-colors font-label-md text-label-md px-3 py-2">设置</button>
+</nav>
+</body></html>

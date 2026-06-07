@@ -1,3 +1,6 @@
+import 'dart:convert';
+import '../utils/snackbar_util.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,6 +39,77 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F8),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: 8,
+          right: 16,
+          top: 12,
+          bottom: MediaQuery.paddingOf(context).bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F9F8),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1A2B3C).withOpacity(0.04),
+              offset: const Offset(0, -4),
+              blurRadius: 16,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // 评价按钮
+            Consumer(builder: (context, ref, _) {
+              final feedbackAsync = ref.watch(articleFeedbackProvider(article.id));
+              final currentFeedback = feedbackAsync.valueOrNull;
+              return Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      currentFeedback == 'useful' ? Icons.thumb_up : Icons.thumb_up_outlined,
+                      color: currentFeedback == 'useful' ? const Color(0xFFD4AF37) : const Color(0xFF1A2B3C).withOpacity(0.6),
+                      size: 20,
+                    ),
+                    onPressed: () => recordArticleFeedback(ref, article.id, 'useful'),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      currentFeedback == 'not_useful' ? Icons.thumb_down : Icons.thumb_down_outlined,
+                      color: currentFeedback == 'not_useful' ? const Color(0xFFBA1A1A) : const Color(0xFF1A2B3C).withOpacity(0.6),
+                      size: 20,
+                    ),
+                    onPressed: () => recordArticleFeedback(ref, article.id, 'not_useful'),
+                  ),
+                ],
+              );
+            }),
+            const Spacer(),
+            // 导出 & 分享
+            IconButton(
+              icon: Icon(Icons.download_outlined, color: const Color(0xFF1A2B3C).withOpacity(0.8), size: 22),
+              onPressed: () => _showExportSheet(context, article),
+            ),
+            IconButton(
+              icon: Icon(Icons.share_outlined, color: const Color(0xFF1A2B3C).withOpacity(0.8), size: 22),
+              onPressed: () => _showShareSheet(context, article),
+            ),
+            const SizedBox(width: 8),
+            // 阅读原文
+            ElevatedButton.icon(
+              onPressed: () => _openOriginalUrl(article.url),
+              icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+              label: const Text('阅读原文', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A2B3C),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
           // 顶部 AppBar
@@ -70,12 +144,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                   await toggleFavorite(ref, article.id);
                   if (mounted) {
                     setState(() {});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(!isFavorited ? '已收藏' : '已取消收藏'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                    showFloatingSnackBar(context, !isFavorited ? '已收藏' : '已取消收藏');
                   }
                 },
               ),
@@ -416,36 +485,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     ),
                   ),
 
-                const SizedBox(height: 24),
-
-                // 底部操作按钮
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.open_in_new,
-                        label: '阅读原文',
-                        onTap: () => _openOriginalUrl(article.url),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.share_outlined,
-                        label: '分享',
-                        onTap: () => _showShareSheet(context, article),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-                _ActionButton(
-                  icon: Icons.download_outlined,
-                  label: '导出文章 (Markdown / JSON)',
-                  onTap: () => _showExportSheet(context, article),
-                ),
-
                 const SizedBox(height: 32),
               ]),
             ),
@@ -461,6 +500,9 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   }
 
   void _showScoreExplanation(BuildContext context) {
+    // 查询 LLM 评分理由
+    final scoreAsync = ref.read(articleScoreProvider(widget.article.id));
+
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFF9F9F8),
@@ -493,14 +535,95 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             ),
             const SizedBox(height: 12),
             _buildScoreExplanationItem(
-              '时效性',
-              '评估新闻的时效价值。突发新闻、独家报道得分较高，旧闻重复报道得分较低。',
-            ),
-            const SizedBox(height: 12),
-            _buildScoreExplanationItem(
               '综合评分',
               '基于以上维度的加权计算，满分 10 分。8.5 分以上为高质量文章，5 分以下建议跳过。',
             ),
+            // 显示 LLM 评分理由（如有）
+            scoreAsync.whenData((score) {
+              if (score != null && score.mode == 'llm' && score.rawResponse != null) {
+                try {
+                  final raw = score.rawResponse!;
+                  // 尝试从 rawResponse JSON 中提取 reason
+                  String? reason;
+                  if (raw.startsWith('{')) {
+                    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+                    reason = decoded['reason'] as String?;
+                  }
+                  if (reason != null && reason.isNotEmpty) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        Divider(color: const Color(0xFFC4C6CD).withOpacity(0.3)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(Icons.auto_awesome, size: 16, color: const Color(0xFFD4AF37).withOpacity(0.8)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'AI 评分理由',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFD4AF37).withOpacity(0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          reason,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.5,
+                            color: const Color(0xFF44474C).withOpacity(0.85),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                } catch (_) {}
+              }
+              return const SizedBox.shrink();
+            }).value ?? const SizedBox.shrink(),
+            // 显示行动建议标签（如有）
+            if (widget.article.actionTag != null && widget.article.actionTag!.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.label, size: 16, color: const Color(0xFF1A2B3C).withOpacity(0.6)),
+                      const SizedBox(width: 6),
+                      Text(
+                        '行动建议',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1A2B3C).withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD4AF37).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      widget.article.actionTag!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFD4AF37).withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 20),
           ],
         ),
@@ -535,13 +658,14 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
   Future<void> _openOriginalUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+    try {
+      final success = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      if (!success && mounted) {
+        showFloatingSnackBar(context, '无法打开链接，请检查浏览器配置');
+      }
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开链接')),
-        );
+        showFloatingSnackBar(context, '无法打开链接，可能未安装浏览器');
       }
     }
   }
@@ -633,11 +757,18 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     color: const Color(0xFF74777D),
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Markdown 导出成功')),
-                  );
+                  try {
+                    await ref.read(exportServiceProvider).shareArticle(article.id, 'md');
+                    if (mounted) {
+                      showFloatingSnackBar(context, 'Markdown 导出成功');
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      showFloatingSnackBar(context, '导出失败: $e');
+                    }
+                  }
                 },
               ),
               ListTile(
@@ -653,11 +784,18 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     color: const Color(0xFF74777D),
                   ),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('JSON 导出成功')),
-                  );
+                  try {
+                    await ref.read(exportServiceProvider).shareArticle(article.id, 'json');
+                    if (mounted) {
+                      showFloatingSnackBar(context, 'JSON 导出成功');
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      showFloatingSnackBar(context, '导出失败: $e');
+                    }
+                  }
                 },
               ),
             ],
@@ -803,6 +941,59 @@ class _ActionButton extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 反馈按钮组件
+class _FeedbackButton extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _FeedbackButton({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFD4AF37).withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? const Color(0xFFD4AF37) : const Color(0xFFC4C6CD).withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              size: 16,
+              color: isActive ? const Color(0xFFD4AF37) : const Color(0xFF74777D),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isActive ? const Color(0xFFD4AF37) : const Color(0xFF74777D),
               ),
             ),
           ],

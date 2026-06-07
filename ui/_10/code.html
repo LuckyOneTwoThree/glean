@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - 添加数据源</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&amp;family=Hanken+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f1f1f0",
+                    "inverse-primary": "#b7c8de",
+                    "secondary-fixed-dim": "#e9c349",
+                    "surface": "#f9f9f8",
+                    "on-primary-fixed-variant": "#38485a",
+                    "golden-hour": "#D4AF37",
+                    "outline": "#74777d",
+                    "paper-white": "#FFFFFF",
+                    "error-container": "#ffdad6",
+                    "primary": "#041627",
+                    "tertiary": "#211200",
+                    "outline-variant": "#c4c6cd",
+                    "tertiary-fixed-dim": "#e1c29b",
+                    "on-tertiary-fixed-variant": "#584326",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "surface-dim": "#dadad9",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-container": "#745c00",
+                    "surface-container-low": "#f3f4f3",
+                    "primary-fixed-dim": "#b7c8de",
+                    "unread-blue": "#2D5AF7",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#574500",
+                    "background": "#f9f9f8",
+                    "on-secondary-fixed": "#241a00",
+                    "primary-container": "#1a2b3c",
+                    "on-tertiary-container": "#a88c69",
+                    "on-surface": "#1a1c1c",
+                    "on-primary-container": "#8192a7",
+                    "soft-grey": "#E8E8E6",
+                    "surface-variant": "#e2e2e2",
+                    "tertiary-fixed": "#feddb5",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#4f6073",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-fixed": "#ffe088",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "secondary": "#735c00",
+                    "ink-blue": "#1A2B3C",
+                    "surface-container-high": "#e8e8e7",
+                    "primary-fixed": "#d2e4fb",
+                    "on-tertiary-fixed": "#281802",
+                    "tertiary-container": "#38260b",
+                    "secondary-container": "#fed65b",
+                    "inverse-surface": "#2f3130",
+                    "text-dimmed": "#6B7280",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#0b1d2d",
+                    "surface-bright": "#f9f9f8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "gutter-md": "16px",
+                    "container-margin": "24px",
+                    "stack-lg": "32px",
+                    "section-gap": "48px",
+                    "base": "4px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Source Serif 4"],
+                    "headline-xl": ["Source Serif 4"],
+                    "body-sm": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "code-sm": ["jetbrainsMono"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Source Serif 4"],
+                    "headline-md": ["Source Serif 4"],
+                    "headline-sm": ["Source Serif 4"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9f8;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(232, 232, 230, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E8E8E6;
+            border-radius: 10px;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .shimmer-active::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface">
+<!-- Top Navigation Anchor (Shared Component Logic) -->
+<header class="bg-surface fixed top-0 w-full z-50">
+<div class="flex justify-between items-center w-full px-container-margin py-stack-md max-w-[800px] mx-auto">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity active:scale-95 duration-150" onclick="window.history.back()">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">添加数据源</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-soft-grey flex items-center justify-center overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A minimalist profile avatar of a professional individual, rendered in a clean vector style. The background is a soft neutral grey, maintaining the sophisticated and corporate modern aesthetic of a high-end digital publication." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6pIJLkZaoebj5ONAGUuociR4NmS2E_sF_QIlXoFDNCNsEaO1KPrsIJ1TiFECKxcDxyWml-cksxHB0I_obwkqzmTjGvKDyl9HMnT4-IDIrbZRawDOnzK-wg_ky6BuoZPkW1VPoB4dZNuSHvwXubd9tvNueZrpMnywTb_nP23F24mK5EtXQxMUK4rxqsvLEFJvfreMRHhohMdS7Vtbn8QLU2oJU5bDQHthRIDuKFEsLMbC2W2Xoogz7ER7RwJabMbf_4RXc3rfFZNTl"/>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-margin max-w-[800px] mx-auto min-h-screen">
+<!-- 1. Search Bar Section -->
+<section class="mb-stack-lg">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-4 bg-paper-white border-b border-soft-grey focus:border-ink-blue focus:ring-0 outline-none transition-all font-body-md text-primary placeholder:text-text-dimmed" id="source-input" placeholder="输入出版物 URL 或关键词..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-ink-blue text-on-primary rounded-lg text-label-md hover:opacity-90 transition-all active:scale-95" onclick="startValidation()">
+                    搜索
+                </button>
+</div>
+<p class="mt-2 text-label-sm text-text-dimmed px-1">支持 RSS, Newsletter 链接, 或主流媒体域名</p>
+</section>
+<!-- 3. Validation Process (Hidden by default) -->
+<section class="hidden mb-stack-lg animate-in fade-in slide-in-from-bottom-4 duration-500" id="validation-section">
+<div class="glass-card rounded-xl p-gutter-md relative overflow-hidden">
+<div class="flex items-center gap-4 mb-stack-md">
+<div class="w-10 h-10 rounded-full bg-soft-grey flex items-center justify-center">
+<span class="material-symbols-outlined text-ink-blue animate-spin">refresh</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-ink-blue">正在验证源...</h3>
+<p class="text-body-sm text-text-dimmed" id="validation-status">正在解析 https://theatlantic.com...</p>
+</div>
+</div>
+<div class="h-1 w-full bg-soft-grey rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-ink-blue to-golden-hour transition-all duration-300 w-0" id="progress-bar"></div>
+</div>
+</div>
+</section>
+<!-- 4. Confirmation Preview (Hidden by default) -->
+<section class="hidden mb-section-gap animate-in zoom-in-95 duration-500" id="confirmation-section">
+<div class="bg-paper-white rounded-xl p-gutter-md shadow-[0_4px_20px_0_rgba(26,43,60,0.04)] border border-soft-grey">
+<div class="flex justify-between items-start mb-gutter-md">
+<div class="flex gap-4">
+<div class="w-16 h-16 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<img alt="Source Logo" class="w-10 h-10 object-contain" data-alt="A clean, minimalist brand logo for a prestigious news publication, The Atlantic. The logo is centered in a soft grey square container, reflecting a corporate and high-end editorial style with clear typography and professional branding." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu7YbfgmUXrShD4Hy29xp6JmmThZd07GyxsLt4i0wjIxHOpNraIzgYXBeiWBOjMl0rWYgQhjHbWihGt47ElPaxuVkgkfzSS-A-wX_YcskzfaL61SLHr1tkJqIjhCdNZ5AGWj2wI_mb1lf52BllLFwXnjDF2iDZA1AM_r98LZ1PQMoCLh-ZaXukrSSNcOW-A1OphoqLvSIw-8C4Gy7JxruShuoR-1T-WpwnS1cA6DjcQNkY0KB3hCflOnZxTH4lcXLrKZHSUDKaHvT4"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-ink-blue">The Atlantic</h2>
+<p class="text-body-sm text-text-dimmed">theatlantic.com • 深度评论与报道</p>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-soft-grey text-ink-blue text-label-sm rounded-full">政治</span>
+<span class="px-2 py-0.5 bg-soft-grey text-ink-blue text-label-sm rounded-full">文化</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-soft-grey peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ink-blue"></div>
+<span class="ml-3 text-label-md text-ink-blue">启用</span>
+</label>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant mb-gutter-md leading-relaxed italic">
+                    "拾光已为您配置 AI 提炼模型，该源的每日简报将侧重于长篇深度内容的结构化摘要。"
+                </p>
+<button class="w-full py-4 bg-ink-blue text-on-primary font-label-md rounded-xl hover:opacity-95 transition-all shadow-lg">确认并开始拾光</button>
+</div>
+</section>
+<!-- 2. Recommended Sources Section -->
+<section id="recommendations">
+<div class="flex items-center gap-2 mb-gutter-md">
+<span class="text-ink-blue">━━━</span>
+<span class="material-symbols-outlined text-ink-blue text-[18px]">auto_awesome</span>
+<span class="text-label-md text-ink-blue font-semibold uppercase tracking-widest">推荐源</span>
+<span class="text-ink-blue flex-grow border-b border-soft-grey"></span>
+</div>
+<!-- Bento Grid Layout for Categories -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter-md">
+<!-- Category: Tech -->
+<div class="space-y-stack-md">
+<h4 class="text-label-md text-text-dimmed px-1">科技与未来</h4>
+<div class="space-y-stack-sm">
+<div class="group flex items-center justify-between p-3 rounded-xl hover:bg-paper-white hover:shadow-sm border border-transparent hover:border-soft-grey transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-ink-blue">terminal</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">The Verge</p>
+<p class="text-label-sm text-text-dimmed">前沿数码与科技生活</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full border border-soft-grey flex items-center justify-center text-ink-blue group-hover:bg-ink-blue group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<div class="group flex items-center justify-between p-3 rounded-xl hover:bg-paper-white hover:shadow-sm border border-transparent hover:border-soft-grey transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-ink-blue">memory</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">MIT Tech Review</p>
+<p class="text-label-sm text-text-dimmed">商业技术权威评论</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full border border-soft-grey flex items-center justify-center text-ink-blue group-hover:bg-ink-blue group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Category: Business -->
+<div class="space-y-stack-md">
+<h4 class="text-label-md text-text-dimmed px-1">商业与全球化</h4>
+<div class="space-y-stack-sm">
+<div class="group flex items-center justify-between p-3 rounded-xl hover:bg-paper-white hover:shadow-sm border border-transparent hover:border-soft-grey transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-ink-blue">monitoring</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">Bloomberg</p>
+<p class="text-label-sm text-text-dimmed">实时市场与财经决策</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full border border-soft-grey flex items-center justify-center text-ink-blue group-hover:bg-ink-blue group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<div class="group flex items-center justify-between p-3 rounded-xl hover:bg-paper-white hover:shadow-sm border border-transparent hover:border-soft-grey transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-ink-blue">public</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">The Economist</p>
+<p class="text-label-sm text-text-dimmed">全球洞察与周刊精选</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full border border-soft-grey flex items-center justify-center text-ink-blue group-hover:bg-ink-blue group-hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- More categories... -->
+<div class="mt-stack-lg p-6 rounded-2xl bg-surface-container-low flex items-center justify-between">
+<div>
+<h5 class="font-headline-sm text-headline-sm text-ink-blue mb-1">还没找到想要的？</h5>
+<p class="text-body-sm text-on-surface-variant">您可以尝试导入 OPML 文件，一次性迁移所有关注点。</p>
+</div>
+<button class="px-6 py-3 border border-ink-blue text-ink-blue rounded-xl font-label-md hover:bg-ink-blue hover:text-on-primary transition-all">
+                    导入 OPML
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Anchor (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-paper-white border-t border-soft-grey shadow-[0_-4px_20px_0_rgba(26,43,60,0.04)]">
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="text-label-sm font-label-sm">Briefing</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="text-label-sm font-label-sm">Favorites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-blue bg-surface-container-low rounded-xl px-4 py-1 scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-sm font-label-sm">Settings</span>
+</a>
+</nav>
+<script>
+        function startValidation() {
+            const input = document.getElementById('source-input');
+            const valSection = document.getElementById('validation-section');
+            const confSection = document.getElementById('confirmation-section');
+            const recSection = document.getElementById('recommendations');
+            const progressBar = document.getElementById('progress-bar');
+            const statusText = document.getElementById('validation-status');
+
+            if (!input.value) return;
+
+            // Hide recommendations, show validation
+            recSection.classList.add('opacity-30', 'pointer-events-none');
+            valSection.classList.remove('hidden');
+            confSection.classList.add('hidden');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    statusText.innerText = "验证完成：已识别 The Atlantic 出版物源";
+                    setTimeout(() => {
+                        valSection.classList.add('hidden');
+                        confSection.classList.remove('hidden');
+                    }, 500);
+                }
+                progressBar.style.width = progress + '%';
+                
+                if (progress > 30 && progress < 70) {
+                    statusText.innerText = "正在获取网站元数据与 RSS 路径...";
+                } else if (progress >= 70) {
+                    statusText.innerText = "正在匹配最佳 AI 提炼配置...";
+                }
+            }, 300);
+        }
+
+        // Add keyboard interaction for input
+        document.getElementById('source-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startValidation();
+            }
+        });
+    </script>
+</body></html>

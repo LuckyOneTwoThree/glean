@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 / Glean - 执行记录</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f1f1f0",
+                    "inverse-primary": "#b7c8de",
+                    "secondary-fixed-dim": "#e9c349",
+                    "surface": "#f9f9f8",
+                    "on-primary-fixed-variant": "#38485a",
+                    "golden-hour": "#D4AF37",
+                    "outline": "#74777d",
+                    "paper-white": "#FFFFFF",
+                    "error-container": "#ffdad6",
+                    "primary": "#041627",
+                    "tertiary": "#211200",
+                    "outline-variant": "#c4c6cd",
+                    "tertiary-fixed-dim": "#e1c29b",
+                    "on-tertiary-fixed-variant": "#584326",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "surface-dim": "#dadad9",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-container": "#745c00",
+                    "surface-container-low": "#f3f4f3",
+                    "primary-fixed-dim": "#b7c8de",
+                    "unread-blue": "#2D5AF7",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#574500",
+                    "background": "#f9f9f8",
+                    "on-secondary-fixed": "#241a00",
+                    "primary-container": "#1a2b3c",
+                    "on-tertiary-container": "#a88c69",
+                    "on-surface": "#1a1c1c",
+                    "on-primary-container": "#8192a7",
+                    "soft-grey": "#E8E8E6",
+                    "surface-variant": "#e2e2e2",
+                    "tertiary-fixed": "#feddb5",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#4f6073",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-fixed": "#ffe088",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "secondary": "#735c00",
+                    "ink-blue": "#1A2B3C",
+                    "surface-container-high": "#e8e8e7",
+                    "primary-fixed": "#d2e4fb",
+                    "on-tertiary-fixed": "#281802",
+                    "tertiary-container": "#38260b",
+                    "secondary-container": "#fed65b",
+                    "inverse-surface": "#2f3130",
+                    "text-dimmed": "#6B7280",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#0b1d2d",
+                    "surface-bright": "#f9f9f8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "gutter-md": "16px",
+                    "container-margin": "24px",
+                    "stack-lg": "32px",
+                    "section-gap": "48px",
+                    "base": "4px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Source Serif 4"],
+                    "headline-xl": ["Source Serif 4"],
+                    "body-sm": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "code-sm": ["JetBrains Mono"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "headline-md": ["Source Serif 4"],
+                    "headline-sm": ["Source Serif 4"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .log-grid {
+            display: grid;
+            grid-template-columns: 80px 100px 1fr 120px;
+            align-items: center;
+        }
+        @media (max-width: 640px) {
+            .log-grid {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e2e2;
+            border-radius: 10px;
+        }
+        .error-glow {
+            box-shadow: inset 2px 0 0 0 #ba1a1a;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface custom-scrollbar">
+<!-- TopAppBar -->
+<header class="bg-surface sticky top-0 z-50 border-b border-soft-grey">
+<div class="flex justify-between items-center w-full px-container-margin py-stack-md max-w-[800px] mx-auto">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:opacity-80 transition-opacity">menu</span>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">拾光 / Glean</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-soft-grey flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvG71APq5dDMzeL69yE9-UBLuh295dUVpGBcqsu36W0JJ4lEyPFHHf_HdRWydLfQbEV6E4AuLkERXQMXnD6a3__SxevogKrVRwGifOUIyrP_mFT37-J1Ox6d6yu1hfnJAwRs5iVuYd4MoAel4soRr2ay-Jnkqew11xslihEaatlCiJwQapqInSwZJ96M89uS7FjH3Rf5wMRqOU25Ps2uPdSoIGIUcaAz5C4GLHngSvNHwDBZRxvXg5Y7-xUnPHmMinHraTQoThWIXo"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[800px] mx-auto px-container-margin py-stack-lg min-h-[calc(100vh-140px)]">
+<!-- Header Section -->
+<section class="mb-stack-lg">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-ink-blue">采集执行记录</h2>
+<p class="text-text-dimmed font-body-sm mt-1">系统全量自动化任务运行状态追踪</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-soft-grey bg-paper-white text-label-sm font-label-sm flex items-center gap-1 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span>筛选</span>
+</button>
+</div>
+</div>
+<!-- Summary Stats -->
+<div class="grid grid-cols-3 gap-4 p-4 bg-paper-white rounded-xl shadow-[0_4px_20px_0_rgba(26,43,60,0.04)] border border-soft-grey">
+<div class="text-center">
+<span class="block text-label-sm text-text-dimmed uppercase tracking-wider mb-1">今日执行</span>
+<span class="font-headline-sm text-ink-blue">1,284</span>
+</div>
+<div class="text-center border-x border-soft-grey">
+<span class="block text-label-sm text-text-dimmed uppercase tracking-wider mb-1">平均耗时</span>
+<span class="font-headline-sm text-ink-blue">1.2s</span>
+</div>
+<div class="text-center">
+<span class="block text-label-sm text-text-dimmed uppercase tracking-wider mb-1">成功率</span>
+<span class="font-headline-sm text-unread-blue">99.2%</span>
+</div>
+</div>
+</section>
+<!-- Status Filter Chips -->
+<div class="flex gap-2 mb-stack-md overflow-x-auto pb-2 no-scrollbar">
+<span class="px-3 py-1 rounded-full bg-ink-blue text-on-primary text-label-sm cursor-pointer">全部</span>
+<span class="px-3 py-1 rounded-full bg-soft-grey text-ink-blue text-label-sm hover:bg-surface-variant cursor-pointer transition-colors">采集</span>
+<span class="px-3 py-1 rounded-full bg-soft-grey text-ink-blue text-label-sm hover:bg-surface-variant cursor-pointer transition-colors">评分</span>
+<span class="px-3 py-1 rounded-full bg-soft-grey text-ink-blue text-label-sm hover:bg-surface-variant cursor-pointer transition-colors">生成</span>
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container text-label-sm hover:opacity-80 cursor-pointer transition-colors">异常</span>
+</div>
+<!-- Log List -->
+<div class="space-y-3">
+<!-- AI Briefing Indicator -->
+<div class="flex items-center justify-center gap-4 text-ink-blue py-2">
+<span class="h-[1px] flex-grow bg-soft-grey"></span>
+<span class="flex items-center gap-2 font-label-md">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    实时日志
+                </span>
+<span class="h-[1px] flex-grow bg-soft-grey"></span>
+</div>
+<!-- Log Entry: Success -->
+<div class="group bg-paper-white border border-soft-grey rounded-lg p-4 hover:border-outline-variant transition-all cursor-default">
+<div class="log-grid gap-4">
+<span class="font-code-sm text-text-dimmed text-sm">14:20:05</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-unread-blue"></span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-ink-blue text-[10px] font-label-sm uppercase">生成</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">晨间简报生成完成</p>
+<p class="text-text-dimmed text-[12px] font-body-sm mt-0.5">耗时: 840ms | 精选: 12 条</p>
+</div>
+<div class="flex justify-end items-center gap-3">
+<span class="text-unread-blue text-label-sm font-semibold">SUCCESS</span>
+<span class="material-symbols-outlined text-outline text-[20px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Log Entry: Failure -->
+<div class="group bg-paper-white border border-error error-glow rounded-lg p-4 hover:bg-error-container/10 transition-all cursor-pointer" onclick="toggleErrorLog('err-1')">
+<div class="log-grid gap-4">
+<span class="font-code-sm text-error text-sm">14:18:22</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container text-[10px] font-label-sm uppercase">采集</span>
+</div>
+<div>
+<p class="font-label-md text-error">RSS 源抓取超时: TechCrunch</p>
+<p class="text-text-dimmed text-[12px] font-body-sm mt-0.5">耗时: 5000ms | 重试: 3/3</p>
+</div>
+<div class="flex justify-end items-center gap-3">
+<span class="text-error text-label-sm font-semibold">FAILURE</span>
+<span class="material-symbols-outlined text-error text-[20px] transition-transform" id="icon-err-1">expand_more</span>
+</div>
+</div>
+<!-- Error Detail Expansion -->
+<div class="hidden mt-4 pt-4 border-t border-error/20" id="err-1">
+<div class="bg-on-background p-3 rounded font-code-sm text-xs text-on-primary overflow-x-auto leading-relaxed">
+<p class="text-error mb-1">[ERROR] FetchError: network timeout at https://techcrunch.com/feed/</p>
+<p class="opacity-70">at ProxyAgent.dispatch (node:internal/modules/cjs/loader:1102:14)</p>
+<p class="opacity-70">at async GleanCollector.fetch (core/collector.js:45:21)</p>
+<p class="opacity-70">at async TaskRunner.execute (core/engine.js:128:5)</p>
+</div>
+<div class="flex gap-3 mt-3">
+<button class="text-label-sm text-error font-semibold flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+                            立即重试
+                        </button>
+<button class="text-label-sm text-text-dimmed font-semibold flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            复制日志
+                        </button>
+</div>
+</div>
+</div>
+<!-- Log Entry: Success -->
+<div class="group bg-paper-white border border-soft-grey rounded-lg p-4 hover:border-outline-variant transition-all cursor-default">
+<div class="log-grid gap-4">
+<span class="font-code-sm text-text-dimmed text-sm">14:15:40</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-unread-blue"></span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-ink-blue text-[10px] font-label-sm uppercase">评分</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">AI 内容质量评分任务</p>
+<p class="text-text-dimmed text-[12px] font-body-sm mt-0.5">耗时: 2.1s | 处理: 156 篇</p>
+</div>
+<div class="flex justify-end items-center gap-3">
+<span class="text-unread-blue text-label-sm font-semibold">SUCCESS</span>
+<span class="material-symbols-outlined text-outline text-[20px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Log Entry: Success -->
+<div class="group bg-paper-white border border-soft-grey rounded-lg p-4 hover:border-outline-variant transition-all cursor-default">
+<div class="log-grid gap-4">
+<span class="font-code-sm text-text-dimmed text-sm">14:10:12</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-unread-blue"></span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-ink-blue text-[10px] font-label-sm uppercase">采集</span>
+</div>
+<div>
+<p class="font-label-md text-ink-blue">Twitter 关键词订阅更新</p>
+<p class="text-text-dimmed text-[12px] font-body-sm mt-0.5">耗时: 1.2s | 新增: 42 条</p>
+</div>
+<div class="flex justify-end items-center gap-3">
+<span class="text-unread-blue text-label-sm font-semibold">SUCCESS</span>
+<span class="material-symbols-outlined text-outline text-[20px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- History Marker -->
+<div class="flex items-center justify-center gap-4 text-text-dimmed py-8">
+<span class="h-[1px] flex-grow bg-soft-grey"></span>
+<span class="text-label-sm">更早之前的记录</span>
+<span class="h-[1px] flex-grow bg-soft-grey"></span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-paper-white shadow-[0_-4px_20px_0_rgba(26,43,60,0.04)] border-t border-soft-grey">
+<div class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-ink-blue bg-surface-container-low rounded-xl px-4 py-1 cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="text-label-sm font-label-sm mt-1">Briefing</span>
+</div>
+<div class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity cursor-pointer">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="text-label-sm font-label-sm mt-1">Favorites</span>
+</div>
+<div class="flex flex-col items-center justify-center text-text-dimmed hover:text-primary transition-opacity cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-sm font-label-sm mt-1">Settings</span>
+</div>
+</nav>
+<script>
+        function toggleErrorLog(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Add some micro-interactions
+        document.querySelectorAll('.group').forEach(item => {
+            item.addEventListener('mousedown', () => {
+                item.style.transform = 'scale(0.98)';
+                item.style.transition = 'transform 0.1s ease';
+            });
+            item.addEventListener('mouseup', () => {
+                item.style.transform = 'scale(1)';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

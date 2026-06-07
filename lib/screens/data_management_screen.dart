@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../utils/snackbar_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,6 +72,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
               title: '单篇导出',
               subtitle: '导出当前查看的文章',
               formats: 'JSON / Markdown',
+              onExport: () => _exportArticle(context),
             ),
             const SizedBox(height: 8),
             _buildExportCard(
@@ -79,6 +81,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
               title: '简报导出',
               subtitle: '导出当前简报的所有文章',
               formats: 'JSON / Markdown',
+              onExport: () => _exportBriefing(context),
             ),
             const SizedBox(height: 8),
             _buildExportCard(
@@ -87,6 +90,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
               title: '全量导出',
               subtitle: '导出所有数据（含配置）',
               formats: 'ZIP',
+              onExport: () => _exportAll(context),
             ),
 
             const SizedBox(height: 32),
@@ -451,6 +455,72 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     }
   }
 
+  Future<void> _exportArticle(BuildContext context) async {
+    final articlesAsync = ref.read(todayBriefingArticlesProvider);
+    final articles = articlesAsync.value ?? [];
+    if (articles.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('暂无文章可导出')),
+        );
+      }
+      return;
+    }
+    try {
+      final articleId = articles.first.id;
+      await ref.read(exportServiceProvider).shareArticle(articleId, 'md');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('单篇导出成功')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showFloatingSnackBar(context, '导出失败: $e');
+      }
+    }
+  }
+
+  Future<void> _exportBriefing(BuildContext context) async {
+    final briefingAsync = ref.read(todayBriefingProvider);
+    final briefingId = briefingAsync.value?['id'] as String?;
+    if (briefingId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('暂无简报可导出')),
+        );
+      }
+      return;
+    }
+    try {
+      await ref.read(exportServiceProvider).shareBriefing(briefingId, 'md');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('简报导出成功')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showFloatingSnackBar(context, '导出失败: $e');
+      }
+    }
+  }
+
+  Future<void> _exportAll(BuildContext context) async {
+    try {
+      await ref.read(exportServiceProvider).shareAll('json');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('全量导出成功')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showFloatingSnackBar(context, '导出失败: $e');
+      }
+    }
+  }
+
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -468,6 +538,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     required String title,
     required String subtitle,
     required String formats,
+    required VoidCallback onExport,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -514,11 +585,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$title 导出成功')),
-              );
-            },
+            onPressed: onExport,
             child: Text(
               formats,
               style: GoogleFonts.hankenGrotesk(

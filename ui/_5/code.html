@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>拾光 - 欢迎</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary-container": "#a88c69",
+                        "outline": "#74777d",
+                        "tertiary-container": "#38260b",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#e1c29b",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-container": "#745c00",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-on-surface": "#f1f1f0",
+                        "secondary-fixed": "#ffe088",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e2e2e2",
+                        "primary-fixed": "#d2e4fb",
+                        "surface": "#f9f9f8",
+                        "inverse-surface": "#2f3130",
+                        "tertiary-fixed": "#feddb5",
+                        "on-secondary-fixed": "#241a00",
+                        "on-primary-container": "#8192a7",
+                        "surface-container": "#eeeeed",
+                        "secondary-fixed-dim": "#e9c349",
+                        "ink-blue": "#1A2B3C",
+                        "golden-hour": "#D4AF37",
+                        "soft-grey": "#E8E8E6",
+                        "primary-fixed-dim": "#b7c8de",
+                        "on-primary-fixed-variant": "#38485a",
+                        "unread-blue": "#2D5AF7",
+                        "secondary": "#735c00",
+                        "on-background": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#fed65b",
+                        "surface-container-low": "#f3f4f3",
+                        "text-dimmed": "#6B7280",
+                        "surface-bright": "#f9f9f8",
+                        "primary-container": "#1a2b3c",
+                        "on-tertiary-fixed": "#281802",
+                        "on-tertiary-fixed-variant": "#584326",
+                        "outline-variant": "#c4c6cd",
+                        "primary": "#041627",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e2e2e2",
+                        "surface-tint": "#4f6073",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9f8",
+                        "surface-dim": "#dadad9",
+                        "on-primary-fixed": "#0b1d2d",
+                        "surface-container-high": "#e8e8e7",
+                        "tertiary": "#211200",
+                        "paper-white": "#FFFFFF",
+                        "inverse-primary": "#b7c8de"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "gutter-md": "16px",
+                        "section-gap": "48px",
+                        "base": "4px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-xl": ["Source Serif 4"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-md": ["Source Serif 4"],
+                        "headline-lg-mobile": ["Source Serif 4"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-sm": ["Source Serif 4"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "code-sm": ["jetbrainsMono"],
+                        "headline-lg": ["Source Serif 4"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            background-color: theme('colors.paper-white');
+            color: theme('colors.on-surface');
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3, h4, h5, h6, .serif-font {
+            font-family: 'Source Serif 4', serif;
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Atmospheric "Light" Background Elements -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<!-- Golden light from top right -->
+<div class="absolute -top-[10%] -right-[10%] w-[80vw] md:w-[50vw] h-[80vw] md:h-[50vw] rounded-full bg-secondary-fixed/40 blur-[100px] md:blur-[140px] opacity-70"></div>
+<!-- Ink blue subtle light from bottom left -->
+<div class="absolute -bottom-[20%] -left-[10%] w-[70vw] md:w-[60vw] h-[70vw] md:h-[60vw] rounded-full bg-primary-fixed/50 blur-[100px] md:blur-[140px] opacity-60"></div>
+</div>
+<!-- Main Content Container -->
+<main class="relative z-10 flex flex-col items-center text-center px-container-margin w-full max-w-[800px] mx-auto">
+<!-- Icon / Visual Anchor -->
+<div class="w-16 h-16 md:w-20 md:h-20 mb-stack-md flex items-center justify-center rounded-2xl bg-paper-white shadow-[0_8px_30px_0_rgba(26,43,60,0.06)] border border-soft-grey fade-in-up delay-1">
+<span class="material-symbols-outlined text-[32px] md:text-[40px] text-golden-hour" style="font-variation-settings: 'FILL' 1;">
+                flare
+            </span>
+</div>
+<!-- Brand Headline -->
+<h1 class="font-headline-xl text-headline-xl md:font-headline-xl md:text-headline-xl text-ink-blue tracking-tight mb-stack-sm fade-in-up delay-2">
+            拾光
+        </h1>
+<!-- Slogan -->
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-section-gap fade-in-up delay-3 max-w-[280px] md:max-w-md">
+            拾取有价值的光
+        </p>
+<!-- Primary Action -->
+<div class="fade-in-up delay-3 w-full flex justify-center">
+<button class="group flex items-center gap-2 bg-ink-blue text-paper-white px-8 py-4 rounded-full font-label-md text-label-md hover:bg-opacity-90 transition-all duration-300 shadow-[0_4px_20px_0_rgba(26,43,60,0.15)] active:scale-95">
+<span>开始配置</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform duration-300">
+                    arrow_forward
+                </span>
+</button>
+</div>
+</main>
+</body></html>

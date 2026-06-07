@@ -1,14 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/models.dart';
 import '../providers/app_state_provider.dart';
+import '../utils/snackbar_util.dart';
 import 'briefing_loading_screen.dart';
 import 'home_screen.dart';
 
-/// Onboarding 流程（4步）
-/// Step 1: 方向选择 → Step 2: 数据源选择(_6) → Step 3: AI模式 → Step 4: 偏好配置(_7)
+/// Onboarding 流程（6步）
+/// Step 0: 欢迎页 → Step 1: 领域选择 → Step 2: 数据源选择
+/// → Step 3: 偏好配置 → Step 4: LLM配置(可选) → Step 5: 生成简报
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -18,7 +21,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentStep = 0;
-  final int _totalSteps = 4;
+  final int _totalSteps = 6;
 
   // 配置状态
   final Set<String> _selectedCategories = {};
@@ -29,6 +32,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _aiMode = 'hybrid';
   double _domesticRatio = 0.5;
   int _dailyCount = 20;
+
+  // LLM 配置状态
+  String _llmProvider = 'mimo';
+  final _apiKeyController = TextEditingController();
+  final _baseUrlController = TextEditingController();
+  final _modelController = TextEditingController();
+  bool _obscureApiKey = true;
 
   static const _inkBlue = Color(0xFF1A2B3C);
   static const _goldenHour = Color(0xFFD4AF37);
@@ -184,6 +194,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _AIModeOption('hybrid', '混合模式', '本地初筛 + LLM 精选，推荐', Icons.tune_outlined),
   ];
 
+  // LLM 提供商选项
+  final List<_LLMProviderOption> _llmProviders = [
+    _LLMProviderOption('mimo', 'MiMo', '小米大模型，免费额度充足', Icons.psychology_outlined),
+    _LLMProviderOption('deepseek', 'DeepSeek', '高性价比推理模型', Icons.auto_awesome_outlined),
+    _LLMProviderOption('openai', 'OpenAI', 'GPT 系列模型', Icons.smart_toy_outlined),
+    _LLMProviderOption('custom', '自定义', '兼容 OpenAI 接口的任意服务', Icons.settings_outlined),
+  ];
+
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    _baseUrlController.dispose();
+    _modelController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,16 +288,167 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return _buildStep1Categories();
+        return _buildStep0Welcome();
       case 1:
-        return _buildStep2Feeds();
+        return _buildStep1Categories();
       case 2:
-        return _buildStep3AIMode();
+        return _buildStep2Feeds();
       case 3:
-        return _buildStep4Preferences();
+        return _buildStep3Preferences();
+      case 4:
+        return _buildStep4LLMConfig();
+      case 5:
+        return _buildStep5Generate();
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  /// Step 0: 欢迎页
+  Widget _buildStep0Welcome() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+
+          // Logo / 品牌图标
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: _inkBlue,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: _inkBlue.withOpacity(0.2),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/logo.png',
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          Text(
+            '拾光',
+            style: GoogleFonts.sourceSerif4(
+              fontSize: 40,
+              fontWeight: FontWeight.w700,
+              color: _inkBlue,
+              height: 1.2,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            'Glean',
+            style: GoogleFonts.hankenGrotesk(
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+              color: _goldenHour,
+              letterSpacing: 4,
+            ),
+          ),
+
+          const SizedBox(height: 40),
+
+          Text(
+            '你的 AI 科技日报',
+            style: GoogleFonts.sourceSerif4(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: _inkBlue,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Text(
+            '从全球优质信源中，为你筛选、评分、摘要\n每天只需 5 分钟，掌握科技前沿',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.hankenGrotesk(
+              fontSize: 16,
+              color: _onSurfaceVariant,
+              height: 1.6,
+            ),
+          ),
+
+          const SizedBox(height: 48),
+
+          // 特性列表
+          _buildFeatureItem(Icons.rss_feed_outlined, '多源采集', 'RSS/Atom 全网科技信源'),
+          const SizedBox(height: 16),
+          _buildFeatureItem(Icons.auto_awesome_outlined, 'AI 筛选', '智能评分 + 深度摘要'),
+          const SizedBox(height: 16),
+          _buildFeatureItem(Icons.newspaper_outlined, '每日简报', '个性化定制，按领域分组'),
+          const SizedBox(height: 16),
+          _buildFeatureItem(Icons.download_outlined, '数据导出', 'Markdown / JSON 随心分享'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String title, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFC4C6CD).withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: _inkBlue, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.hankenGrotesk(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _inkBlue,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.hankenGrotesk(
+                    fontSize: 13,
+                    color: _onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Step 1: 方向选择
@@ -318,7 +495,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  /// Step 2: 数据源选择（对应 _6 设计图）
+  /// Step 2: 数据源选择
   Widget _buildStep2Feeds() {
     return _StepContainer(
       title: '精选信源',
@@ -465,83 +642,86 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  /// Step 3: AI 模式
-  Widget _buildStep3AIMode() {
-    return _StepContainer(
-      title: 'AI 校准',
-      subtitle: '选择 AI 评分和筛选文章的方式，之后可在设置中更改。',
-      child: Column(
-        children: _aiModes.map((mode) {
-          final isSelected = _aiMode == mode.id;
-          return GestureDetector(
-            onTap: () => setState(() => _aiMode = mode.id),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isSelected ? _inkBlue : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? _inkBlue
-                      : const Color(0xFFC4C6CD).withOpacity(0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    mode.icon,
-                    color: isSelected ? Colors.white : _inkBlue,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          mode.name,
-                          style: GoogleFonts.hankenGrotesk(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : _inkBlue,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          mode.description,
-                          style: GoogleFonts.hankenGrotesk(
-                            fontSize: 13,
-                            color: isSelected
-                                ? Colors.white.withOpacity(0.8)
-                                : _onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isSelected)
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.white,
-                    ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  /// Step 4: 偏好配置（对应 _7 设计图）
-  Widget _buildStep4Preferences() {
+  /// Step 3: 偏好配置（AI 模式 + 地域 + 数量）
+  Widget _buildStep3Preferences() {
     return _StepContainer(
       title: '偏好精调',
       subtitle: '校准你的每日简报偏好。',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // AI 模式选择
+          Text(
+            'AI 模式',
+            style: GoogleFonts.hankenGrotesk(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: _inkBlue,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ..._aiModes.map((mode) {
+            final isSelected = _aiMode == mode.id;
+            return GestureDetector(
+              onTap: () => setState(() => _aiMode = mode.id),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isSelected ? _inkBlue : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? _inkBlue
+                        : const Color(0xFFC4C6CD).withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      mode.icon,
+                      color: isSelected ? Colors.white : _inkBlue,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            mode.name,
+                            style: GoogleFonts.hankenGrotesk(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected ? Colors.white : _inkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            mode.description,
+                            style: GoogleFonts.hankenGrotesk(
+                              fontSize: 13,
+                              color: isSelected
+                                  ? Colors.white.withOpacity(0.8)
+                                  : _onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
+          const SizedBox(height: 24),
+
           // 地域偏好卡片
           Container(
             padding: const EdgeInsets.all(24),
@@ -693,6 +873,305 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  /// Step 4: LLM 配置（可选，省钱模式可跳过）
+  Widget _buildStep4LLMConfig() {
+    final isEconomy = _aiMode == 'economy';
+    final needsLLM = !isEconomy;
+
+    return _StepContainer(
+      title: 'AI 接入',
+      subtitle: needsLLM
+          ? '配置 LLM API 以启用 AI 深度分析和摘要。'
+          : '省钱模式无需 API Key，如需升级可在设置中配置。',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isEconomy) ...[
+            // 省钱模式提示
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.savings_outlined, color: _inkBlue, size: 28),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '省钱模式已选择',
+                          style: GoogleFonts.hankenGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _inkBlue,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '所有评分和摘要将在本地完成，无需 API Key。你可以随时在设置中升级到质量模式或混合模式。',
+                          style: GoogleFonts.hankenGrotesk(
+                            fontSize: 13,
+                            color: _onSurfaceVariant,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // 提供商选择
+            Text(
+              '选择提供商',
+              style: GoogleFonts.hankenGrotesk(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: _inkBlue,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _llmProviders.map((provider) {
+                final isSelected = _llmProvider == provider.id;
+                return ChoiceChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(provider.icon, size: 16),
+                      const SizedBox(width: 6),
+                      Text(provider.name),
+                    ],
+                  ),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _llmProvider = provider.id),
+                  selectedColor: _inkBlue,
+                  backgroundColor: const Color(0xFFF3F4F3),
+                  labelStyle: GoogleFonts.hankenGrotesk(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? Colors.white : _inkBlue,
+                  ),
+                  showCheckmark: false,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 24),
+
+            // API Key
+            Text(
+              'API Key',
+              style: GoogleFonts.hankenGrotesk(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: _inkBlue,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _apiKeyController,
+              obscureText: _obscureApiKey,
+              decoration: InputDecoration(
+                hintText: '输入你的 API Key',
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureApiKey ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  onPressed: () => setState(() => _obscureApiKey = !_obscureApiKey),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Base URL（仅自定义模式显示）
+            if (_llmProvider == 'custom') ...[
+              Text(
+                'Base URL',
+                style: GoogleFonts.hankenGrotesk(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _inkBlue,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _baseUrlController,
+                decoration: const InputDecoration(
+                  hintText: 'https://api.example.com/v1',
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // 模型名称
+            Text(
+              '模型名称',
+              style: GoogleFonts.hankenGrotesk(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: _inkBlue,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _modelController,
+              decoration: InputDecoration(
+                hintText: _llmProvider == 'mimo'
+                    ? '默认: MiMo-7B-RL'
+                    : _llmProvider == 'deepseek'
+                        ? '默认: deepseek-chat'
+                        : _llmProvider == 'openai'
+                            ? '默认: gpt-4o-mini'
+                            : '输入模型名称',
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 提示
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: _goldenHour, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'API Key 仅存储在本地，不会上传到任何服务器。你也可以稍后在设置中配置。',
+                      style: GoogleFonts.hankenGrotesk(
+                        fontSize: 12,
+                        color: _onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Step 5: 生成第一份简报
+  Widget _buildStep5Generate() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 32),
+
+          // 配置摘要卡片
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFC4C6CD).withOpacity(0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _inkBlue.withOpacity(0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.checklist_rtl_outlined, color: _goldenHour, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      '配置摘要',
+                      style: GoogleFonts.sourceSerif4(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: _inkBlue,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildSummaryRow('关注领域', '${_selectedCategories.length} 个领域'),
+                const SizedBox(height: 12),
+                _buildSummaryRow('数据源', '${_selectedFeeds.length} 个信源'),
+                const SizedBox(height: 12),
+                _buildSummaryRow('AI 模式', _aiModes.firstWhere((m) => m.id == _aiMode).name),
+                const SizedBox(height: 12),
+                _buildSummaryRow('地域偏好', '国内 ${(_domesticRatio * 100).round()}% / 国际 ${100 - (_domesticRatio * 100).round()}%'),
+                const SizedBox(height: 12),
+                _buildSummaryRow('每日简报', '$_dailyCount 篇'),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          Text(
+            '一切就绪',
+            style: GoogleFonts.sourceSerif4(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: _inkBlue,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '点击下方按钮，拾光将为你采集信源\n并生成第一份专属简报',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.hankenGrotesk(
+              fontSize: 16,
+              color: _onSurfaceVariant,
+              height: 1.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.hankenGrotesk(
+            fontSize: 14,
+            color: _onSurfaceVariant,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.hankenGrotesk(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: _inkBlue,
+          ),
+        ),
+      ],
+    );
+  }
+
   String _getBalanceText() {
     final domestic = (_domesticRatio * 100).round();
     final global = 100 - domestic;
@@ -720,7 +1199,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_currentStep == 1)
+            if (_currentStep == 2)
               // Step 2: 显示已选择数量 + 继续按钮
               Row(
                 children: [
@@ -753,6 +1232,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ],
               )
+            else if (isLastStep)
+              // 最后一步：生成简报按钮
+              FilledButton.icon(
+                onPressed: _completeOnboarding,
+                icon: const Icon(Icons.auto_awesome, size: 20),
+                label: Text(
+                  '开启我的拾光之旅',
+                  style: GoogleFonts.hankenGrotesk(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              )
             else
               FilledButton(
                 onPressed: _goNext,
@@ -760,7 +1258,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      isLastStep ? '完成配置' : '继续',
+                      '继续',
                       style: GoogleFonts.hankenGrotesk(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -772,7 +1270,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
 
-            if (isLastStep) ...[
+            if (!isLastStep) ...[
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _completeOnboarding,
@@ -793,16 +1291,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _goNext() {
     // 校验当前步骤
-    if (_currentStep == 0 && _selectedCategories.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少选择一个关注领域')),
-      );
+    if (_currentStep == 1 && _selectedCategories.isEmpty) {
+      showFloatingSnackBar(context, '请至少选择一个关注领域');
       return;
     }
-    if (_currentStep == 1 && _selectedFeeds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少选择一个数据源')),
-      );
+    if (_currentStep == 2 && _selectedFeeds.isEmpty) {
+      showFloatingSnackBar(context, '请至少选择一个数据源');
       return;
     }
 
@@ -839,16 +1333,45 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           }
         }
 
+        // 保存 LLM 配置（如果用户填写了）
+        if (_apiKeyController.text.isNotEmpty) {
+          final llmResults = await db.query('llm_config', where: 'id = ?', whereArgs: ['default']);
+          final llmExisting = llmResults.isNotEmpty
+              ? LLMConfig.fromMap(llmResults.first)
+              : const LLMConfig();
+
+          String baseUrl = _baseUrlController.text.trim();
+          String model = _modelController.text.trim();
+          if (_llmProvider == 'mimo') {
+            baseUrl = baseUrl.isEmpty ? 'https://api.maimiao.cn/v1' : baseUrl;
+            model = model.isEmpty ? 'MiMo-7B-RL' : model;
+          } else if (_llmProvider == 'deepseek') {
+            baseUrl = baseUrl.isEmpty ? 'https://api.deepseek.com/v1' : baseUrl;
+            model = model.isEmpty ? 'deepseek-chat' : model;
+          } else if (_llmProvider == 'openai') {
+            baseUrl = baseUrl.isEmpty ? 'https://api.openai.com/v1' : baseUrl;
+            model = model.isEmpty ? 'gpt-4o-mini' : model;
+          }
+
+          final newLLMConfig = llmExisting.copyWith(
+            provider: _llmProvider,
+            apiKey: _apiKeyController.text.trim(),
+            baseUrl: baseUrl,
+            model: model,
+          );
+          await saveLLMConfig(ref, newLLMConfig);
+        }
+
         refreshData(ref);
       } catch (e) {
         debugPrint('Onboarding save error: $e');
       }
     }
 
-    // 跳转到简报生成加载页，首次进入显示"开启我的拾光之旅"按钮
+    // 跳转到简报生成加载页
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
+      CupertinoPageRoute(
         builder: (_) => BriefingLoadingScreen(
           nextScreen: const HomeScreen(),
           showCompletionButton: true,
@@ -958,4 +1481,12 @@ class _AIModeOption {
   final String description;
   final IconData icon;
   const _AIModeOption(this.id, this.name, this.description, this.icon);
+}
+
+class _LLMProviderOption {
+  final String id;
+  final String name;
+  final String description;
+  final IconData icon;
+  const _LLMProviderOption(this.id, this.name, this.description, this.icon);
 }

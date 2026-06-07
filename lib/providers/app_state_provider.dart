@@ -82,6 +82,9 @@ final homeFilterProvider = StateProvider<String>((ref) => 'all');
 /// 首页排序
 final homeSortProvider = StateProvider<String>((ref) => 'score');
 
+/// Web 专用已读文章 ID 集合
+final readArticleIdsProvider = StateProvider<Set<String>>((ref) => {});
+
 /// 收藏的文章 ID 集合
 final favoritedArticleIdsProvider = StateProvider<Set<String>>((ref) => {});
 
@@ -121,9 +124,12 @@ final articlesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async 
     final filter = ref.watch(homeFilterProvider);
     final sort = ref.watch(homeSortProvider);
 
+    final readIds = ref.watch(readArticleIdsProvider);
     var result = articles.map((a) {
       final id = a['id'] as String;
-      return Map<String, dynamic>.from(a)..['is_favorited'] = favoritedIds.contains(id) ? 1 : 0;
+      return Map<String, dynamic>.from(a)
+        ..['is_favorited'] = favoritedIds.contains(id) ? 1 : 0
+        ..['is_read'] = readIds.contains(id) ? 1 : a['is_read'];
     }).toList();
 
     switch (filter) {
@@ -204,6 +210,16 @@ final articleDetailProvider = FutureProvider.family<Article?, String>((ref, arti
   final maps = await db.query('articles', where: 'id = ?', whereArgs: [articleId]);
   if (maps.isEmpty) return null;
   return Article.fromMap(maps.first);
+});
+
+/// 文章评分记录 Provider（按文章ID查询）
+final articleScoreProvider = FutureProvider.family<Score?, String>((ref, articleId) async {
+  if (kIsWeb) return null;
+  ref.watch(_refreshCounterProvider);
+  final db = ref.watch(databaseServiceProvider);
+  final maps = await db.query('scores', where: 'article_id = ?', whereArgs: [articleId]);
+  if (maps.isEmpty) return null;
+  return Score.fromMap(maps.first);
 });
 
 /// 今日简报
@@ -292,6 +308,14 @@ final errorFeedsProvider = FutureProvider<List<Feed>>((ref) async {
   return feedService.getErrorFeeds();
 });
 
+/// 文章反馈状态 Provider
+final articleFeedbackProvider = FutureProvider.family<String?, String>((ref, articleId) async {
+  ref.watch(_refreshCounterProvider);
+  if (kIsWeb) return null;
+  final scoreService = ref.watch(scoreServiceProvider);
+  return scoreService.getArticleFeedback(articleId);
+});
+
 // ==================== 数据库写入辅助 ====================
 
 /// 触发数据刷新
@@ -322,7 +346,10 @@ Future<void> toggleFavorite(WidgetRef ref, String articleId) async {
 
 /// 标记文章为已读（写DB）
 Future<void> markArticleRead(WidgetRef ref, String articleId) async {
-  if (!kIsWeb) {
+  if (kIsWeb) {
+    final readIds = ref.read(readArticleIdsProvider);
+    ref.read(readArticleIdsProvider.notifier).state = Set<String>.from(readIds)..add(articleId);
+  } else {
     final db = ref.read(databaseServiceProvider);
     await db.update(
       'articles',
@@ -380,6 +407,15 @@ Future<void> toggleFeed(WidgetRef ref, String feedId) async {
   if (!kIsWeb) {
     final feedService = ref.read(feedServiceProvider);
     await feedService.toggleFeed(feedId);
+  }
+  refreshData(ref);
+}
+
+/// 记录文章反馈（写DB + 刷新）
+Future<void> recordArticleFeedback(WidgetRef ref, String articleId, String feedbackType) async {
+  if (!kIsWeb) {
+    final scoreService = ref.read(scoreServiceProvider);
+    await scoreService.recordFeedback(articleId, feedbackType);
   }
   refreshData(ref);
 }
