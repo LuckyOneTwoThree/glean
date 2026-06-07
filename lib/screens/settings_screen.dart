@@ -470,18 +470,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// 设置卡片
   Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFC4C6CD).withOpacity(0.3),
-          width: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: const Color(0xFFC4C6CD).withOpacity(0.3),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
-        children: children,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: children,
+        ),
       ),
     );
   }

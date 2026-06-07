@@ -69,7 +69,9 @@ class HomeScreen extends ConsumerWidget {
       onTap: () {
         ref.read(homeTabIndexProvider.notifier).state = index;
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEEEEED) : Colors.transparent,
@@ -78,19 +80,25 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 24,
-              color: isSelected ? const Color(0xFF1A2B3C) : const Color(0xFF74777D),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+            AnimatedScale(
+              duration: const Duration(milliseconds: 200),
+              scale: isSelected ? 1.1 : 1.0,
+              curve: Curves.easeOutBack,
+              child: Icon(
+                icon,
+                size: 24,
                 color: isSelected ? const Color(0xFF1A2B3C) : const Color(0xFF74777D),
               ),
+            ),
+            const SizedBox(height: 2),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: GoogleFonts.hankenGrotesk(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? const Color(0xFF1A2B3C) : const Color(0xFFC4C6CD),
+              ),
+              child: Text(label),
             ),
           ],
         ),
@@ -150,6 +158,8 @@ class _HomeTab extends ConsumerWidget {
 
         // 文章列表
         articlesAsync.when(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
           data: (articles) {
             if (articles.isEmpty) {
               return SliverFillRemaining(
@@ -272,32 +282,44 @@ class _HomeTab extends ConsumerWidget {
     final internationalCount = briefingAsync.value?['international_count'] as int? ?? 0;
     final aiInsight = briefingAsync.value?['ai_insight'] as String? ?? '';
 
-    return GestureDetector(
-      onTap: () {
-        // 跳转到简报页面
-        ref.read(homeTabIndexProvider.notifier).state = 1;
-      },
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFFE8E8E6),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF1A2B3C).withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // 右上角装饰渐变
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = false;
+        return GestureDetector(
+          onTapDown: (_) => setState(() => isPressed = true),
+          onTapUp: (_) {
+            setState(() => isPressed = false);
+            // 跳转到简报页面
+            ref.read(homeTabIndexProvider.notifier).state = 1;
+          },
+          onTapCancel: () => setState(() => isPressed = false),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 150),
+            scale: isPressed ? 0.98 : 1.0,
+            curve: Curves.easeInOut,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFE8E8E6),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A2B3C).withOpacity(isPressed ? 0.02 : 0.06),
+                    blurRadius: isPressed ? 8 : 24,
+                    offset: Offset(0, isPressed ? 2 : 6),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // 右上角装饰渐变
             Positioned(
               top: 0,
               right: 0,
@@ -438,8 +460,11 @@ class _HomeTab extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+},
+);
+}
 
   /// 筛选标签栏
   Widget _buildFilterBar(
@@ -469,7 +494,9 @@ class _HomeTab extends ConsumerWidget {
                   onTap: () {
                     ref.read(homeFilterProvider.notifier).state = item.$1;
                   },
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
                       color: isActive
@@ -491,14 +518,16 @@ class _HomeTab extends ConsumerWidget {
                             ]
                           : null,
                     ),
-                    child: Text(
-                      item.$2,
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
                       style: GoogleFonts.hankenGrotesk(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.02,
                         color: isActive ? Colors.white : const Color(0xFF74777D),
                       ),
+                      child: Text(item.$2),
                     ),
                   ),
                 ),
@@ -515,8 +544,8 @@ class _HomeTab extends ConsumerWidget {
                   },
                   child: Row(
                     children: [
-                      Text(
-                        '评分',
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
                         style: GoogleFonts.hankenGrotesk(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -525,13 +554,20 @@ class _HomeTab extends ConsumerWidget {
                               ? const Color(0xFF1A2B3C)
                               : const Color(0xFF74777D),
                         ),
+                        child: const Text('评分'),
                       ),
-                      if (sort == 'score')
-                        const Icon(
-                          Icons.arrow_downward,
-                          size: 14,
-                          color: Color(0xFF1A2B3C),
-                        ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child)),
+                        child: sort == 'score'
+                            ? const Icon(
+                                Icons.arrow_downward,
+                                key: ValueKey('score_icon'),
+                                size: 14,
+                                color: Color(0xFF1A2B3C),
+                              )
+                            : const SizedBox(key: ValueKey('score_empty'), width: 0),
+                      ),
                     ],
                   ),
                 ),
@@ -550,8 +586,8 @@ class _HomeTab extends ConsumerWidget {
                   },
                   child: Row(
                     children: [
-                      Text(
-                        '时间',
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
                         style: GoogleFonts.hankenGrotesk(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -560,13 +596,20 @@ class _HomeTab extends ConsumerWidget {
                               ? const Color(0xFF1A2B3C)
                               : const Color(0xFF74777D),
                         ),
+                        child: const Text('时间'),
                       ),
-                      if (sort == 'time')
-                        const Icon(
-                          Icons.unfold_more,
-                          size: 14,
-                          color: Color(0xFF1A2B3C),
-                        ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child)),
+                        child: sort == 'time'
+                            ? const Icon(
+                                Icons.unfold_more,
+                                key: ValueKey('time_icon'),
+                                size: 14,
+                                color: Color(0xFF1A2B3C),
+                              )
+                            : const SizedBox(key: ValueKey('time_empty'), width: 0),
+                      ),
                     ],
                   ),
                 ),

@@ -44,7 +44,9 @@ class _ArticleCardState extends State<ArticleCard> {
           scale: scale,
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeInOut,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -56,9 +58,9 @@ class _ArticleCardState extends State<ArticleCard> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1A2B3C).withOpacity(_isPressed ? 0.02 : 0.04),
-                  blurRadius: _isPressed ? 10 : 20,
-                  offset: Offset(0, _isPressed ? 2 : 4),
+                  color: const Color(0xFF1A2B3C).withOpacity(_isPressed ? 0.02 : 0.06),
+                  blurRadius: _isPressed ? 8 : 24,
+                  offset: Offset(0, _isPressed ? 2 : 6),
                 ),
               ],
             ),
@@ -136,14 +138,30 @@ class _ArticleCardState extends State<ArticleCard> {
                     // 收藏按钮
                     GestureDetector(
                       onTap: widget.onFavoriteToggle,
-                      child: Icon(
-                        article.isFavorited
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 20,
-                        color: article.isFavorited
-                            ? const Color(0xFFBA1A1A)
-                            : const Color(0xFF74777D),
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOutBack,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) {
+                            return ScaleTransition(
+                              scale: animation,
+                              child: child,
+                            );
+                          },
+                          child: Icon(
+                            article.isFavorited
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            key: ValueKey<bool>(article.isFavorited),
+                            size: 20,
+                            color: article.isFavorited
+                                ? const Color(0xFFBA1A1A)
+                                : const Color(0xFF74777D),
+                          ),
+                        ),
                       ),
                     ),
                   ],

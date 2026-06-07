@@ -136,20 +136,42 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
 
             ..._aiModes.map((mode) {
               final isSelected = _aiMode == mode.id;
-              return GestureDetector(
-                onTap: () => setState(() => _aiMode = mode.id),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isSelected ? _inkBlue : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? _inkBlue
-                          : const Color(0xFFC4C6CD).withOpacity(0.3),
-                    ),
-                  ),
+              return StatefulBuilder(
+                builder: (context, setStateItem) {
+                  bool isPressed = false;
+                  return GestureDetector(
+                    onTapDown: (_) => setStateItem(() => isPressed = true),
+                    onTapUp: (_) {
+                      setStateItem(() => isPressed = false);
+                      setState(() => _aiMode = mode.id);
+                    },
+                    onTapCancel: () => setStateItem(() => isPressed = false),
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 150),
+                      scale: isPressed ? 0.98 : 1.0,
+                      curve: Curves.easeInOut,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? _inkBlue : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? _inkBlue
+                                : const Color(0xFFC4C6CD).withOpacity(0.3),
+                          ),
+                          boxShadow: [
+                            if (!isSelected && isPressed)
+                              BoxShadow(
+                                color: _inkBlue.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                          ],
+                        ),
                   child: Row(
                     children: [
                       Container(
@@ -229,8 +251,11 @@ class _LLMConfigScreenState extends ConsumerState<LLMConfigScreen> {
                     ],
                   ),
                 ),
-              );
-            }),
+              ),
+            );
+          },
+        );
+      }),
 
             const SizedBox(height: 32),
 

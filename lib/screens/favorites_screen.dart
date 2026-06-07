@@ -46,6 +46,8 @@ class FavoritesScreen extends ConsumerWidget {
 
           // 收藏文章列表
           articlesAsync.when(
+            skipLoadingOnReload: true,
+            skipLoadingOnRefresh: true,
             data: (articles) {
               final favoritedArticles = articles
                   .map((map) => Article.fromMap(map))

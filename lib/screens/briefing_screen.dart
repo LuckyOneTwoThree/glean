@@ -65,6 +65,8 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
 
                 // 文章列表（按分类分组）
                 articlesAsync.when(
+                  skipLoadingOnReload: true,
+                  skipLoadingOnRefresh: true,
                   data: (articles) {
                     if (articles.isEmpty) {
                       return const SliverFillRemaining(
@@ -329,25 +331,44 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
 
   /// 简报文章项（紧凑样式）
   Widget _buildBriefingArticleItem(BuildContext context, Article article) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (_) => ArticleDetailScreen(article: article),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFC4C6CD).withOpacity(0.3),
-            width: 1,
-          ),
-        ),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = false;
+        return GestureDetector(
+          onTapDown: (_) => setState(() => isPressed = true),
+          onTapUp: (_) {
+            setState(() => isPressed = false);
+            Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (_) => ArticleDetailScreen(article: article),
+              ),
+            );
+          },
+          onTapCancel: () => setState(() => isPressed = false),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 150),
+            scale: isPressed ? 0.98 : 1.0,
+            curve: Curves.easeInOut,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isPressed ? const Color(0xFFF9F9F8) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFC4C6CD).withOpacity(0.3),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A2B3C).withOpacity(isPressed ? 0.02 : 0.04),
+                    blurRadius: isPressed ? 8 : 16,
+                    offset: Offset(0, isPressed ? 2 : 4),
+                  ),
+                ],
+              ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -419,8 +440,11 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+},
+);
+}
 
   /// 底部操作按钮
   Widget _buildBottomActions(BuildContext context) {
@@ -576,21 +600,40 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
       } catch (_) {}
     }
 
-    return GestureDetector(
-      onTap: () {
-        // TODO: 跳转历史简报详情
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFC4C6CD).withOpacity(0.3),
-            width: 1,
-          ),
-        ),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = false;
+        return GestureDetector(
+          onTapDown: (_) => setState(() => isPressed = true),
+          onTapUp: (_) {
+            setState(() => isPressed = false);
+            // TODO: 跳转历史简报详情
+          },
+          onTapCancel: () => setState(() => isPressed = false),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 150),
+            scale: isPressed ? 0.98 : 1.0,
+            curve: Curves.easeInOut,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isPressed ? const Color(0xFFF9F9F8) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFC4C6CD).withOpacity(0.3),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1A2B3C).withOpacity(isPressed ? 0.02 : 0.04),
+                    blurRadius: isPressed ? 8 : 16,
+                    offset: Offset(0, isPressed ? 2 : 4),
+                  ),
+                ],
+              ),
         child: Row(
           children: [
             // 日期图标
@@ -647,8 +690,11 @@ class _BriefingScreenState extends ConsumerState<BriefingScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+},
+);
+}
 
   void _showExportSheet(BuildContext context) {
     final briefingId = ref.read(todayBriefingProvider).value?['id'] as String?;

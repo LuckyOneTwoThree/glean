@@ -134,11 +134,23 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             actions: [
               // 收藏按钮
               IconButton(
-                icon: Icon(
-                  isFavorited ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorited
-                      ? const Color(0xFFBA1A1A)
-                      : const Color(0xFF1A2B3C),
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutBack,
+                  switchOutCurve: Curves.easeIn,
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    );
+                  },
+                  child: Icon(
+                    isFavorited ? Icons.favorite : Icons.favorite_border,
+                    key: ValueKey<bool>(isFavorited),
+                    color: isFavorited
+                        ? const Color(0xFFBA1A1A)
+                        : const Color(0xFF1A2B3C),
+                  ),
                 ),
                 onPressed: () async {
                   await toggleFavorite(ref, article.id);
